@@ -1,6 +1,22 @@
 {
-  "img/chars/striker-1.png": { "asset_id": "5d67ef3b-bcf7-4fce-aada-50b35e150d42", "label": "striker-1 拳鬥士" },
-  "img/chars/swift-1.png":   { "asset_id": "3b6c6b0d-d0da-4482-b392-488c3afd5962", "label": "swift-1 疾風拳客" },
-  "img/chars/guard-1.png":   { "asset_id": "dcd307e7-e995-40dc-9aab-81fe0343522b", "label": "guard-1 鐵壁衛士" },
-  "img/chars/monk-1.png":    { "asset_id": "067c3025-3142-4aaa-af30-2461770a3cdd", "label": "monk-1 修行武僧" }
+  "img/chars/striker-1.png": {
+    "asset_id": "5d67ef3b-bcf7-4fce-aada-50b35e150d42",
+    "label": "striker-1 拳鬥士",
+    "sha12": "5eb930198bb0"
+  },
+  "img/chars/swift-1.png": {
+    "asset_id": "3b6c6b0d-d0da-4482-b392-488c3afd5962",
+    "label": "swift-1 疾風拳客",
+    "sha12": "c57bd8c404e6"
+  },
+  "img/chars/guard-1.png": {
+    "asset_id": "dcd307e7-e995-40dc-9aab-81fe0343522b",
+    "label": "guard-1 鐵壁衛士",
+    "sha12": "74b3905bc092"
+  },
+  "img/chars/monk-1.png": {
+    "asset_id": "067c3025-3142-4aaa-af30-2461770a3cdd",
+    "label": "monk-1 修行武僧",
+    "sha12": "f7998bd917f2"
+  }
 }
