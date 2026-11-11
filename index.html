@@ -36,7 +36,7 @@ button:active{transform:scale(.97)}
 .ghost{background:transparent}
 .chip{padding:6px 11px;border-radius:999px;font-size:13px}
 .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;text-align:center}
 .stat b{display:block;font-size:24px}
 .stat span{font-size:12px;color:var(--sub)}
@@ -179,6 +179,7 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
   background:linear-gradient(90deg,#ffd36b,#ff5a3c);-webkit-background-clip:text;background-clip:text;color:transparent;animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
 .fxbox .gain{margin:14px 0;text-align:left;background:var(--card);border-radius:14px;padding:12px 14px;font-size:14px}
 .fxbox .gain div{display:flex;justify-content:space-between;padding:3px 0;animation:rise .35s both}
+.fxbox .gain.hk .sub{display:block}
 .fxbox .gain .sum{border-top:1px solid var(--line);margin-top:6px;padding-top:8px;font-weight:800;color:var(--accent2)}
 .fxbox .emb{margin:0 auto;width:96px;height:96px;font-size:50px;border-radius:26px;animation:spinIn 1s cubic-bezier(.2,1.2,.4,1) both}
 .ray{position:absolute;left:50%;top:50%;width:520px;height:520px;margin:-260px;pointer-events:none;
@@ -247,6 +248,7 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
     <div class="stat"><b id="sStreak">0</b><span>連續天數</span></div>
     <div class="stat"><b id="sWeek">0</b><span>本週次數</span></div>
     <div class="stat"><b id="sMin">0</b><span>累計分鐘</span></div>
+    <div class="stat"><b id="sKcal">0</b><span>本週消耗 kcal</span></div>
   </div>
   <div class="card" style="margin-top:8px">
     <div class="sub">最近 14 天</div>
@@ -289,6 +291,22 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
     <button id="chgCls">更換職業（等級保留）</button>
     <button id="replaySplash" class="ghost">重播進場動畫</button>
   </div>
+  <h2>健康與熱量</h2>
+  <div class="card" id="hkCard">
+    <label>體重（公斤，用來估算熱量）</label>
+    <input id="hkWeight" type="number" inputmode="decimal" placeholder="例如 75">
+    <label>熱量來源</label>
+    <div class="seg" id="hkMode">
+      <button data-m="watch">⌚ Apple Watch</button><button data-m="est">公式估算</button>
+    </div>
+    <div class="sub" id="hkModeHint" style="margin-top:8px"></div>
+    <label>本週 / 本月消耗</label>
+    <div id="hkSum" style="font-weight:700"></div>
+    <div class="sub" style="margin-top:10px">需要先在「捷徑」App 建立兩個捷徑，<a href="https://github.com/kaifazhelmc/boxing-app/blob/main/docs/health-shortcuts.md" target="_blank" rel="noopener">設定教學</a>。
+      <br>打完後忘了讀手錶也沒關係，可以用下面的按鈕補登到最近一筆紀錄。</div>
+    <div class="row" style="margin-top:10px"><button id="hkLastBtn">⌚ 補登最近一筆</button></div>
+  </div>
+
   <h2>Google 雲端備份</h2>
   <div class="card" id="cloudCard">
     <div class="sub" id="cloudStatus">尚未設定</div>
@@ -341,6 +359,7 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
       <span class="sub" style="width:44px">畫面</span>
       <button id="mirBtn" style="flex:1;justify-content:center">左右翻轉：關</button>
     </div>
+    <div class="card sub" id="watchHint" style="display:none;padding:10px 12px">⌚ 記得在 Apple Watch 開始「踢拳」或「混合有氧」運動，打完再結束，熱量會更準。</div>
     <button class="primary bigdone" id="doneBtn">✓ 完成今天的訓練</button>
   </div>
 </section>
@@ -548,6 +567,7 @@ function renderHome(){
   const week = S.logs.filter(l=>new Date(l.date+"T00:00")>=mon).length;
   const mins = Math.round(S.logs.reduce((a,l)=>a+(l.min||0),0));
   $("#sStreak").textContent=streak; $("#sWeek").textContent=week; $("#sMin").textContent=mins;
+  $("#sKcal").textContent = Math.round(S.logs.filter(l=>new Date(l.date+"T00:00")>=mon).reduce((a,l)=>a+(l.kcal||0),0));
   // 14 天
   let h=""; for(let i=13;i>=0;i--){ const x=new Date(); x.setDate(x.getDate()-i); const k=dkey(x);
     h+=`<div class="dot ${done.has(k)?"done":""} ${i===0?"today":""}">${x.getDate()}</div>`; }
@@ -629,6 +649,7 @@ function askDelete(id, btn){
 
 /* ---------- 紀錄 ---------- */
 function renderHist(){
+  try{ renderHkCard(); }catch(e){}
   try{ renderCloud(); }catch(e){}
   const c=CLASSES[S.cls];
   if(c){
@@ -639,7 +660,7 @@ function renderHist(){
   if(!S.logs.length){ $("#logList").innerHTML='<div class="empty">還沒有紀錄，打完一部影片按「完成」就會出現在這裡</div>'; return; }
   $("#logList").innerHTML = S.logs.slice().reverse().slice(0,60).map(l=>{
     const v=S.videos.find(x=>x.id===l.id);
-    return `<div><span>${l.date.slice(5).replace("-","/")}　${esc(v?v.title:l.title||"（已刪除的影片）")}</span><span class="sub" style="white-space:nowrap;margin-left:8px">${l.min?Math.round(l.min)+" 分・":""}+${l.xp||0}</span></div>`;
+    return `<div><span>${l.date.slice(5).replace("-","/")}　${esc(v?v.title:l.title||"（已刪除的影片）")}</span><span class="sub" style="white-space:nowrap;margin-left:8px">${l.min?Math.round(l.min)+" 分・":""}${l.kcal?`${l.kcalSrc==="watch"?"⌚":""}${l.kcal} kcal・`:""}+${l.xp||0}</span></div>`;
   }).join("");
 }
 
@@ -675,6 +696,7 @@ let player=null, apiReady=false, pendingId=null, curId=null, posTimer=null, wake
 window.onYouTubeIframeAPIReady = ()=>{ apiReady=true; if(pendingId) createPlayer(pendingId); };
 (function loadApi(){ const s=document.createElement("script"); s.src="https://www.youtube.com/iframe_api"; s.onerror=()=>toast("YouTube 播放器載入失敗，請檢查網路"); document.head.appendChild(s); })();
 
+let sessionStart=null, sessionVid=null;
 function openPlayer(id){
   const v=S.videos.find(x=>x.id===id); if(!v) return;
   curId=id;
@@ -689,6 +711,9 @@ function openPlayer(id){
   $("#vbox").classList.toggle("mirror", !!S.mirror);
   $("#mirBtn").textContent = "左右翻轉：" + (S.mirror?"開":"關");
   document.querySelectorAll("#spdSeg button").forEach(b=>b.classList.toggle("on", +b.dataset.s===+S.speed));
+  if(!S.health) S.health={mode:"watch",weight:null};
+  $("#watchHint").style.display = S.health.mode==="watch" ? "block" : "none";
+  if(!sessionStart || sessionVid!==id){ sessionStart=new Date(); sessionVid=id; }
   scrollTo(0,0);
   if(apiReady) createPlayer(id); else pendingId=id;
 }
@@ -746,7 +771,11 @@ $("#doneBtn").onclick=()=>{
   const vv = v || {int:"normal"};
   const g = calcXp(vv, min);
   const before = lvInfo(totalXp());
-  S.logs.push({date:todayKey(), id:curId, title:v?v.title:"", min:Math.round(min), xp:g.total});
+  const end=new Date(), startT = sessionStart && sessionVid===curId ? sessionStart : new Date(end - Math.max(min,1)*60000);
+  const est = estKcal(vv.int, min);
+  S.logs.push({date:todayKey(), id:curId, title:v?v.title:"", min:Math.round(min), xp:g.total,
+    start:startT.toISOString(), end:end.toISOString(), kcal:est, kcalSrc:est?"est":""});
+  sessionStart=null; sessionVid=null;
   delete S.pos[curId]; save();
   const after = lvInfo(totalXp());
   recId=null; closePlayer(); go("home");
@@ -767,9 +796,92 @@ function showResult(g, before, after){
     <div class="big">${up?"LEVEL UP!":"訓練完成！"}</div>
     ${up?`<div class="oldnew"><s>Lv ${before.lv}</s> → <b>Lv ${after.lv}</b></div>`:`<div class="sub" style="margin-top:6px">辛苦了 💪</div>`}
     <div class="gain">${rows}<div class="sum" style="animation-delay:${.15+g.parts.length*.12}s"><span>獲得經驗</span><span>+${g.total} EXP</span></div></div>
+    <div id="hkPanel">${healthPanel(S.logs.length-1)}</div>
     ${adv?`<button class="adv" data-fxclose onclick="setTimeout(advance,250)">✦ 可以轉職了！立刻轉職</button>`:""}
     <button class="${adv?"ghost":"primary"} bigdone" style="margin-top:8px" data-fxclose>${adv?"等一下再說":"好"}</button>`, up);
 }
+
+/* ---------- 健康 / 熱量 ---------- */
+const MET = {light:5, normal:6.5, hard:8};          // 拳擊有氧的大約運動強度係數
+const SC_READ = "拳擊跟練-讀取手錶", SC_WRITE = "拳擊跟練-寫入健康";
+function estKcal(intensity, min){
+  const w = S.health && S.health.weight; if(!w || !min) return 0;
+  return Math.round((MET[intensity]||6.5) * w * (min/60));
+}
+function runShortcut(name, text){
+  location.href = `shortcuts://run-shortcut?name=${encodeURIComponent(name)}&input=text&text=${encodeURIComponent(text)}`;
+}
+function healthPanel(i){
+  const l=S.logs[i]; if(!l) return "";
+  if(!S.health) S.health={mode:"watch",weight:null};
+  const kc = l.kcal ? `<b style="font-size:22px;color:var(--accent2)">${l.kcal}</b> kcal` : `<span class="sub">尚無熱量資料</span>`;
+  const src = l.kcalSrc==="watch" ? `⌚ Apple Watch${l.hr?`・平均心率 ${l.hr}`:""}` : l.kcalSrc==="manual" ? "手動輸入" : l.kcalSrc==="est" ? "公式估算" : "";
+  let btns="";
+  if(S.health.mode==="watch"){
+    btns = `<div class="row" style="justify-content:center;margin-top:8px">
+      <button class="primary" onclick="hkRead(${i})">⌚ 讀取手錶熱量</button>
+      <button onclick="hkPaste(${i})">📋 貼上讀取結果</button></div>
+      <div class="sub" style="margin-top:6px">先按「讀取」執行捷徑，回到這裡再按「貼上」。<br>手錶資料同步可能要等一兩分鐘。</div>`;
+  } else {
+    btns = `<div class="row" style="justify-content:center;margin-top:8px">
+      ${l.kcal?`<button class="primary" onclick="hkWrite(${i})">❤️ 寫入健康 App</button>`:`<button onclick="go('hist');fxClose()">先設定體重</button>`}</div>`;
+  }
+  btns += `<div class="row" style="justify-content:center;margin-top:6px;gap:6px">
+    <input id="hkMan${i}" type="number" inputmode="numeric" placeholder="手動輸入 kcal" style="width:140px;padding:7px 10px">
+    <button onclick="hkManual(${i})">儲存</button></div>`;
+  return `<div class="gain hk" style="text-align:center"><div class="sub" style="display:block">消耗熱量${src?`（${src}）`:""}</div><div style="display:block">${kc}</div>${btns}</div>`;
+}
+function hkRefresh(i){ const el=$("#hkPanel"); if(el && $("#fx").classList.contains("on")) el.innerHTML=healthPanel(i); renderHome(); try{renderHkCard();}catch(e){} }
+function hkRead(i){
+  const l=S.logs[i]; if(!l) return;
+  // 往前多抓 1 分鐘、往後多抓 2 分鐘，涵蓋手錶開始/結束的時間差
+  const st=new Date(new Date(l.start||l.end).getTime()-60000).toISOString(), en=new Date(new Date(l.end).getTime()+120000).toISOString();
+  hkPending=i; runShortcut(SC_READ, `${st}|${en}`);
+}
+let hkPending=null;
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && hkPending!=null){ setTimeout(()=>toast("讀好了嗎？按「📋 貼上讀取結果」"),600); hkPending=null; } });
+async function hkPaste(i){
+  let t="";
+  try{ t = await navigator.clipboard.readText(); }catch(e){ toast("無法讀取剪貼簿，請用手動輸入"); return; }
+  const m = String(t).match(/BOXHK:([\d.]+)(?::([\d.]+))?/);
+  if(!m){ toast("剪貼簿裡沒有手錶資料，請先按「讀取手錶熱量」"); return; }
+  const kcal=Math.round(+m[1]), hr=m[2]?Math.round(+m[2]):null;
+  if(!kcal){ toast("這段時間沒有讀到手錶的活動能量"); return; }
+  Object.assign(S.logs[i], {kcal, hr, kcalSrc:"watch"}); save(); cloudDirty=true;
+  toast(`已記錄 ${kcal} kcal ⌚`); hkRefresh(i);
+}
+function hkManual(i){
+  const v=Math.round(+($("#hkMan"+i)||{}).value); if(!v||v<1||v>3000){ toast("請輸入 1–3000 之間的數字"); return; }
+  Object.assign(S.logs[i], {kcal:v, kcalSrc:"manual"}); save(); cloudDirty=true; toast(`已記錄 ${v} kcal`); hkRefresh(i);
+}
+function hkWrite(i){
+  const l=S.logs[i]; if(!l||!l.kcal) return;
+  runShortcut(SC_WRITE, `${Math.max(1,l.min)},${l.kcal}`);
+  l.toHealth=true; save();
+}
+function renderHkCard(){
+  if(!$("#hkCard")) return;
+  if(!S.health) S.health={mode:"watch",weight:null};
+  $("#hkWeight").value = S.health.weight||"";
+  document.querySelectorAll("#hkMode button").forEach(b=>b.classList.toggle("on", b.dataset.m===S.health.mode));
+  $("#hkModeHint").textContent = S.health.mode==="watch"
+    ? "打拳時在手錶開「踢拳」運動，手錶會自動寫入健康 App；打完用捷徑把熱量和心率讀回來。"
+    : "用體重 × 強度 × 時間估算熱量，打完可一鍵寫入健康 App（誤差約兩三成）。";
+  const now=new Date(), mon=new Date(now); mon.setHours(0,0,0,0); mon.setDate(mon.getDate()-((now.getDay()+6)%7));
+  const m1=new Date(now.getFullYear(), now.getMonth(), 1);
+  const sum = from => Math.round(S.logs.filter(l=>new Date(l.date+"T00:00")>=from).reduce((a,l)=>a+(l.kcal||0),0));
+  $("#hkSum").textContent = `${sum(mon)} kcal ／ ${sum(m1)} kcal`;
+}
+$("#hkWeight").addEventListener("change",()=>{
+  const w=+$("#hkWeight").value; if(!S.health) S.health={mode:"watch"};
+  S.health.weight = (w>=30&&w<=250)? Math.round(w*10)/10 : null; save();
+  toast(S.health.weight?`體重已設為 ${S.health.weight} 公斤`:"體重請輸入 30–250");
+});
+document.querySelectorAll("#hkMode button").forEach(b=>b.onclick=()=>{ if(!S.health) S.health={}; S.health.mode=b.dataset.m; save(); renderHkCard(); });
+$("#hkLastBtn").onclick=()=>{
+  if(!S.logs.length){ toast("還沒有任何紀錄"); return; }
+  const i=S.logs.length-1; fxOpen(`<div class="big" style="font-size:26px">補登熱量</div><div class="sub" style="margin-top:6px">${esc(S.logs[i].title||"")}・${S.logs[i].date}</div><div id="hkPanel">${healthPanel(i)}</div><button class="primary bigdone" style="margin-top:8px" data-fxclose>關閉</button>`, false);
+};
 
 /* ---------- 轉職 ---------- */
 function advance(){
@@ -954,7 +1066,7 @@ setTimeout(syncNewVideos, 2600);
 playSplash(()=>{ if(!S.cls) openClassPick("new"); });
 
 /* ---------- PWA ---------- */
-const APP_VERSION = "2026.11.11-8";
+const APP_VERSION = "2026.11.11-9";
 if("serviceWorker" in navigator && location.protocol==="https:"){
   navigator.serviceWorker.register("sw.js", {updateViaCache:"none"}).then(reg=>{
     // 每次回到 App 都檢查有沒有新版
