@@ -238,8 +238,11 @@ a{color:var(--accent2)}
 <!-- ========== 影片庫 ========== -->
 <section id="lib" class="view">
   <div class="row between"><h1>影片庫</h1><button class="primary" id="addBtn">＋ 新增</button></div>
-  <div class="row" style="margin:10px 0 4px" id="fType"></div>
-  <div class="row" style="margin-bottom:12px" id="fInt"></div>
+  <div class="row" style="margin:10px 0 4px" id="fSrc"></div>
+  <div class="row" style="margin-bottom:4px" id="fType"></div>
+  <div class="row" style="margin-bottom:4px" id="fInt"></div>
+  <div class="row" style="margin-bottom:8px" id="fLen"></div>
+  <div class="sub" id="libCount" style="margin-bottom:10px"></div>
   <div class="list" id="libList"></div>
 </section>
 
@@ -306,7 +309,7 @@ a{color:var(--accent2)}
   <div class="row between"><b>新增影片</b><button class="ghost" data-close>✕</button></div>
   <label>YouTube 網址</label><input id="aUrl" placeholder="https://www.youtube.com/watch?v=...">
   <label>名稱</label><input id="aTitle" placeholder="例如：健身拳擊 每日訓練 20 分">
-  <label>類型</label><select id="aType"><option value="daily">每日訓練</option><option value="tutorial">動作教學</option></select>
+  <label>類型</label><select id="aType"><option value="daily">每日訓練</option><option value="tutorial">動作教學</option><option value="stretch">伸展</option></select>
   <label>強度</label><select id="aInt"><option value="light">輕</option><option value="normal" selected>一般</option><option value="hard">高強度</option></select>
   <label>長度（分鐘，可留空，第一次播放會自動抓）</label><input id="aMin" type="number" inputmode="numeric">
   <button class="primary bigdone" style="margin-top:16px" id="aSave">儲存</button>
@@ -324,22 +327,76 @@ a{color:var(--accent2)}
 
 <script>
 /* ---------- 預設影片 ---------- */
+// src: game = 健身拳擊遊戲畫面, coach = 真人教練跟練
 const DEFAULT_VIDEOS = [
-  {id:"WZ3T32Cljo8", title:"健身拳擊2 全動作教學（逐一示範每個動作）", type:"tutorial", int:"light", min:null},
-  {id:"YiIC9E8j4PI", title:"每日訓練：伸展＋基礎組合拳 #1 #2（入門）", type:"daily", int:"light", min:null},
-  {id:"YLhtPnGE5kE", title:"每日訓練 18 分鐘（tnkk 2024/02/17）", type:"daily", int:"normal", min:18},
-  {id:"Y_Vctlnysf4", title:"輕強度：中級組合拳 1（Laura 教練）", type:"daily", int:"light", min:null},
-  {id:"hiKD_8bIEi0", title:"40 分鐘完整版（週末用）", type:"daily", int:"hard", min:40},
-  {id:"3QX2b0-GF90", title:"每日運動 #196（中文頻道）", type:"daily", int:"normal", min:null}
+  /* ===== 健身拳擊（遊戲畫面） ===== */
+  {id:"WZ3T32Cljo8", title:"健身拳擊2 全動作教學（逐一示範每個動作）", type:"tutorial", int:"light", min:null, src:"game"},
+  {id:"XNlqzUsetPQ", title:"健身拳擊2 Evan 伸展操 5 分鐘", type:"stretch", int:"light", min:5, src:"game"},
+  {id:"YiIC9E8j4PI", title:"每日訓練：伸展＋基礎組合拳 #1 #2（入門）", type:"daily", int:"light", min:null, src:"game"},
+  {id:"2JmQi2zXfaA", title:"跟 Lin 教練練拳（體驗版）", type:"daily", int:"light", min:null, src:"game"},
+  {id:"SF5tYerzpZ8", title:"每日訓練 #2：Lin 教練", type:"daily", int:"light", min:null, src:"game"},
+  {id:"Y_Vctlnysf4", title:"輕強度：中級組合拳 1（Laura 教練）", type:"daily", int:"light", min:null, src:"game"},
+  {id:"e8A6fbci8YE", title:"跟 Laura 教練練拳", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"sDv059_q2wI", title:"跟 Evan 教練練拳", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"cf7sY9VfR_w", title:"新教練 Leo 練拳", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"YLhtPnGE5kE", title:"每日訓練 18 分鐘（tnkk 2024/02/17）", type:"daily", int:"normal", min:18, src:"game"},
+  {id:"FAOxczTc9VM", title:"每日訓練 18 分鐘（tnkk 2024/02/25）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"ZJ6Q81LMRBM", title:"每日訓練（tnkk 2024/04/15）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"NVmtozWK5Og", title:"每日訓練（tnkk 2024/04/30）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"CVqoUMr0sRU", title:"每日訓練（tnkk 2024/05/13）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"-4wn6OX-5n8", title:"每日訓練（tnkk 2024/05/22）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"xP5M1Z-OvyQ", title:"每日訓練（tnkk 2024/10/13）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"aM7gt9cZ_9o", title:"每日訓練（tnkk 2024/10/14）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"3QX2b0-GF90", title:"每日運動 #196（中文頻道）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"-FaPnAVQwaw", title:"減重日記 Day 75 每日訓練", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"TeewPgDd-jY", title:"減重日記 Day 83 每日訓練", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"lKrgwGzo-yE", title:"深夜每日訓練（Martina 教練）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"0wx2CCrmXGI", title:"健身拳擊3 每日訓練（減重 30 分＋打靶）", type:"daily", int:"normal", min:null, src:"game"},
+  {id:"mZTr0BoZ4B8", title:"Janice 教練毫不留情的每日訓練", type:"daily", int:"hard", min:null, src:"game"},
+  {id:"hiKD_8bIEi0", title:"40 分鐘完整版（週末用）", type:"daily", int:"hard", min:40, src:"game"},
+  {id:"K4rojLbx1GU", title:"每日 45 分鐘（中文頻道，含分段時間）", type:"daily", int:"hard", min:null, src:"game"},
+  /* ===== 真人教練跟練 ===== */
+  {id:"ZPMJ0ewddQI", title:"5 分鐘高強度有氧拳擊操（大愛運動教練）", type:"daily", int:"hard", min:5, src:"coach"},
+  {id:"gbFyNmmYASQ", title:"十分鐘拳擊運動（古月拳館）", type:"daily", int:"light", min:10, src:"coach"},
+  {id:"0IaQAaI0aos", title:"10 分鐘拳擊有氧燃脂（全站立）", type:"daily", int:"normal", min:10, src:"coach"},
+  {id:"7PCYxd3uhVY", title:"10 分鐘高強度空拳（Nate Bower）", type:"daily", int:"hard", min:10, src:"coach"},
+  {id:"YpKHrsChCKw", title:"15 分鐘拳擊有氧初學者（WG Online）", type:"daily", int:"light", min:15, src:"coach"},
+  {id:"sVPZP3HSl3s", title:"20 分鐘初學者拳擊（不重複動作）", type:"daily", int:"light", min:20, src:"coach"},
+  {id:"EB1UwmjOdYo", title:"20 分鐘拳擊：練姿勢與步法", type:"daily", int:"light", min:20, src:"coach"},
+  {id:"P475CpooIdE", title:"20 分鐘拳擊 HIIT（初學者）", type:"daily", int:"normal", min:20, src:"coach"},
+  {id:"grq7zfaAWLA", title:"20 分鐘空拳跟練", type:"daily", int:"normal", min:20, src:"coach"},
+  {id:"pMbB7JIdYL0", title:"20 分鐘居家拳擊訓練（Tony Jeffries）", type:"daily", int:"normal", min:20, src:"coach"},
+  {id:"MC7niyr0rxo", title:"20 分鐘拳擊 Tabata", type:"daily", int:"hard", min:20, src:"coach"},
+  {id:"C_KIMIZlvnY", title:"20 分鐘空拳循環 HIIT（不重複）", type:"daily", int:"hard", min:20, src:"coach"},
+  {id:"s_CsbU4yrmo", title:"25 分鐘拳擊肌訓 EP01（客家電視《停動停動好健康》）", type:"daily", int:"normal", min:25, src:"coach"},
+  {id:"aS7EXMG2bOo", title:"30 分鐘拳擊有氧＋肌力（May，初中階）", type:"daily", int:"normal", min:30, src:"coach"},
+  {id:"c2Nw2h-GDd0", title:"有氧拳擊 2.0：30 分鐘中高強度（May）", type:"daily", int:"hard", min:30, src:"coach"},
+  {id:"AC2uKFMj1AE", title:"30 分鐘拳擊 Tabata 燃脂（May）", type:"daily", int:"hard", min:30, src:"coach"},
+  {id:"zyI0cH_Erzg", title:"30 分鐘拳擊循環訓練（李俊明教練）", type:"daily", int:"hard", min:30, src:"coach"},
+  {id:"QKXE2q-eQ1U", title:"30 分鐘高強度拳擊有氧＋伸展（日本）", type:"daily", int:"hard", min:30, src:"coach"}
 ];
+const LIB_VER = 2;
 const INT_TXT = {light:"輕", normal:"一般", hard:"高強度"};
-const TYPE_TXT = {daily:"每日訓練", tutorial:"動作教學"};
+const TYPE_TXT = {daily:"每日訓練", tutorial:"動作教學", stretch:"伸展"};
+const SRC_TXT = {game:"健身拳擊", coach:"教練跟練", mine:"自己加的"};
 const KEY = "boxingapp.v1";
 
 /* ---------- 儲存 ---------- */
 let S = {videos: DEFAULT_VIDEOS.map(v=>({...v})), logs: [], pos:{}, mood:"ok", speed:1, mirror:false, cls:null, name:"", tier:0};
 try{ const raw = localStorage.getItem(KEY); if(raw){ S = Object.assign(S, JSON.parse(raw)); } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+// 影片庫更新：把新版預設影片補進舊資料（自己刪掉的不會再出現）
+(function migrateLib(){
+  if(!Array.isArray(S.deleted)) S.deleted=[];
+  const defs = Object.fromEntries(DEFAULT_VIDEOS.map(v=>[v.id,v]));
+  S.videos.forEach(v=>{ if(!v.src) v.src = defs[v.id] ? defs[v.id].src : "mine"; if(defs[v.id] && v.type!==defs[v.id].type) v.type=defs[v.id].type; });
+  if((S.libVer||1) < LIB_VER){
+    const have = new Set(S.videos.map(v=>v.id));
+    DEFAULT_VIDEOS.forEach(v=>{ if(!have.has(v.id) && !S.deleted.includes(v.id)) S.videos.push({...v}); });
+    S.libVer = LIB_VER;
+  }
+  save();
+})();
 
 /* ---------- 職業 / 等級 ---------- */
 const TIER_LV = [1, 10, 30, 60, 100];
@@ -450,7 +507,7 @@ function renderHome(){
 let recId=null;
 function pickRec(exclude){
   const wd=new Date().getDay(), weekend = wd===0||wd===6;
-  const daily = S.videos.filter(v=>v.type==="daily");
+  const daily = S.videos.filter(v=>v.type==="daily" && !v.noEmbed);
   if(!daily.length) return null;
   // 還沒做過任何訓練 → 先推教學
   if(!S.logs.length){ const t=S.videos.find(v=>v.type==="tutorial"); if(t && exclude!==t.id) return t; }
@@ -473,26 +530,37 @@ function renderRec(force){
   $("#recCard").innerHTML = `<div class="rec">
     <div class="thumb" style="background-image:url(${thumb(v.id)})">${v.min?`<span class="len">${v.min} 分</span>`:""}</div>
     <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px">${esc(v.title)}</div>
-      <div class="tags"><span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]}</span></div>
+      <div class="tags"><span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]||""}</span><span class="tag">${SRC_TXT[v.src]||""}</span></div>
       <button class="primary" style="margin-top:10px" onclick="openPlayer('${v.id}')">▶ 開始</button></div></div>`;
 }
 
 /* ---------- 影片庫 ---------- */
-let fType="all", fInt="all";
+let fType="all", fInt="all", fSrc="all", fLen="all";
+function lenOk(v){
+  if(fLen==="all") return true;
+  if(!v.min) return fLen==="unk";
+  if(fLen==="s") return v.min<=15;
+  if(fLen==="m") return v.min>15 && v.min<=30;
+  if(fLen==="l") return v.min>30;
+  return false;
+}
 function chips(el, opts, cur, cb){
   el.innerHTML = opts.map(([k,t])=>`<button class="chip ${k===cur?"on":""}" data-k="${k}">${t}</button>`).join("");
   el.querySelectorAll("button").forEach(b=>b.onclick=()=>cb(b.dataset.k));
 }
 function renderLib(){
-  chips($("#fType"), [["all","全部"],["daily","每日訓練"],["tutorial","動作教學"]], fType, k=>{fType=k;renderLib();});
+  chips($("#fSrc"), [["all","全部來源"],["game","健身拳擊"],["coach","教練跟練"],["mine","自己加的"]], fSrc, k=>{fSrc=k;renderLib();});
+  chips($("#fType"), [["all","所有類型"],["daily","每日訓練"],["tutorial","動作教學"],["stretch","伸展"]], fType, k=>{fType=k;renderLib();});
   chips($("#fInt"), [["all","所有強度"],["light","輕"],["normal","一般"],["hard","高強度"]], fInt, k=>{fInt=k;renderLib();});
+  chips($("#fLen"), [["all","所有長度"],["s","15 分內"],["m","16–30 分"],["l","30 分以上"],["unk","長度未知"]], fLen, k=>{fLen=k;renderLib();});
   const cnt={}; S.logs.forEach(l=>cnt[l.id]=(cnt[l.id]||0)+1);
-  const list = S.videos.filter(v=>(fType==="all"||v.type===fType)&&(fInt==="all"||v.int===fInt));
+  const list = S.videos.filter(v=>(fSrc==="all"||v.src===fSrc)&&(fType==="all"||v.type===fType)&&(fInt==="all"||v.int===fInt)&&lenOk(v));
+  $("#libCount").textContent = `共 ${list.length} 部${list.length!==S.videos.length?`（全部 ${S.videos.length} 部）`:""}・長度未知的影片播放一次就會自動補上`;
   $("#libList").innerHTML = list.length ? list.map(v=>`
     <div class="item" data-id="${v.id}">
       <div class="thumb" style="width:110px;background-image:url(${thumb(v.id)})">${v.min?`<span class="len">${v.min} 分</span>`:""}</div>
       <div class="meta"><div class="t">${esc(v.title)}</div>
-        <div class="tags"><span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]}</span>${cnt[v.id]?`<span class="tag done">打過 ${cnt[v.id]} 次</span>`:""}</div></div>
+        <div class="tags"><span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]||""}</span><span class="tag">${SRC_TXT[v.src]||""}</span>${cnt[v.id]?`<span class="tag done">打過 ${cnt[v.id]} 次</span>`:""}${v.noEmbed?`<span class="tag hard">需到 YouTube 看</span>`:""}</div></div>
       <button class="ghost" data-del="${v.id}" title="刪除" style="padding:6px 9px">🗑</button>
     </div>`).join("") : '<div class="empty">沒有符合條件的影片</div>';
   $("#libList").querySelectorAll(".item").forEach(it=>it.onclick=e=>{
@@ -502,7 +570,7 @@ function renderLib(){
   });
 }
 function askDelete(id, btn){
-  if(btn.dataset.confirm){ S.videos=S.videos.filter(v=>v.id!==id); save(); renderLib(); toast("已刪除"); return; }
+  if(btn.dataset.confirm){ S.videos=S.videos.filter(v=>v.id!==id); if(!S.deleted.includes(id)) S.deleted.push(id); save(); renderLib(); toast("已刪除"); return; }
   btn.dataset.confirm="1"; btn.textContent="確定刪除？"; btn.style.color="var(--accent)";
   setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.confirm; btn.textContent="🗑"; btn.style.color=""; } },3000);
 }
@@ -546,7 +614,7 @@ function openPlayer(id){
   document.querySelector("nav").style.display="none";
   $("#playerView").style.display="block";
   $("#pTitle").textContent=v.title;
-  $("#pTags").innerHTML=`<span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]}</span>${v.min?`<span class="tag">${v.min} 分</span>`:""}`;
+  $("#pTags").innerHTML=`<span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]||""}</span><span class="tag">${SRC_TXT[v.src]||""}</span>${v.min?`<span class="tag">${v.min} 分</span>`:""}`;
   const url=`https://www.youtube.com/watch?v=${id}`;
   $("#ytLink").href=url; $("#errLink").href=url;
   $("#err").classList.remove("show");
@@ -579,7 +647,7 @@ function createPlayer(id){
         else { clearInterval(posTimer); try{ S.pos[id]=player.getCurrentTime(); save(); }catch(_){} }
         if(e.data===YT.PlayerState.ENDED){ keepAwake(false); delete S.pos[id]; save(); toast("打完了！記得按「完成」"); }
       },
-      onError:e=>{ if([100,101,150,153].includes(e.data)) $("#err").classList.add("show"); else toast("播放發生錯誤（代碼 "+e.data+"）"); }
+      onError:e=>{ if([100,101,150,153].includes(e.data)){ $("#err").classList.add("show"); const bv=S.videos.find(x=>x.id===id); if(bv && e.data!==153){ bv.noEmbed=true; save(); } } else toast("播放發生錯誤（代碼 "+e.data+"）"); }
     }
   });
 }
@@ -701,7 +769,7 @@ $("#aSave").onclick=()=>{
   const id=parseId($("#aUrl").value); if(!id){ toast("網址看不懂，請貼 YouTube 影片網址"); return; }
   if(S.videos.some(v=>v.id===id)){ toast("這部已經在影片庫裡了"); return; }
   const min=parseInt($("#aMin").value,10);
-  S.videos.unshift({id, title:$("#aTitle").value.trim()||"新影片", type:$("#aType").value, int:$("#aInt").value, min:min>0?min:null});
+  S.videos.unshift({id, title:$("#aTitle").value.trim()||"新影片", type:$("#aType").value, int:$("#aInt").value, min:min>0?min:null, src:"mine"}); S.deleted=S.deleted.filter(x=>x!==id);
   save(); $("#addModal").classList.remove("on"); renderLib(); toast("已新增");
 };
 
@@ -727,7 +795,7 @@ $("#bkGo").onclick=()=>{
 $("#resetLib").onclick=function(){
   if(!this.dataset.c){ this.dataset.c=1; this.textContent="再按一次確定"; setTimeout(()=>{delete this.dataset.c; this.textContent="影片庫恢復預設";},3000); return; }
   const keep={}; S.videos.forEach(v=>keep[v.id]=v.min);
-  S.videos=DEFAULT_VIDEOS.map(v=>({...v, min:v.min||keep[v.id]||null})); save();
+  const mine=S.videos.filter(v=>v.src==="mine"); S.videos=DEFAULT_VIDEOS.map(v=>({...v, min:v.min||keep[v.id]||null})).concat(mine); S.deleted=[]; save();
   delete this.dataset.c; this.textContent="影片庫恢復預設"; toast("已恢復預設影片");
 };
 
