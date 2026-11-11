@@ -1,0 +1,33 @@
+name: 每日更新新影片
+
+on:
+  schedule:
+    - cron: "43 21 * * *"   # 每天臺灣時間 05:43
+  workflow_dispatch:         # 也可以在 Actions 頁面手動執行
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 抓新影片
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python scripts/update_videos.py
+      - name: 有變動就提交
+        run: |
+          git config user.name "boxing-bot"
+          git config user.email "boxing-bot@users.noreply.github.com"
+          git add videos-new.json data/channels.json
+          if git diff --cached --quiet; then
+            echo "沒有新影片"
+          else
+            git commit -m "每日更新新影片 $(date -u +%F)"
+            git push
+          fi

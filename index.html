@@ -519,7 +519,7 @@ function pickRec(exclude){
   const last={}; S.logs.forEach(l=>{ last[l.id]=l.date; });
   pool = pool.filter(v=>v.id!==exclude);
   if(!pool.length) pool=daily;
-  pool.sort((a,b)=>(last[a.id]||"0").localeCompare(last[b.id]||"0"));
+  pool.sort((a,b)=>((b.isNew&&!last[b.id])?1:0)-((a.isNew&&!last[a.id])?1:0) || (last[a.id]||"0").localeCompare(last[b.id]||"0"));
   const top = pool.slice(0, Math.min(3,pool.length));
   return top[Math.floor(Math.random()*top.length)];
 }
@@ -529,7 +529,7 @@ function renderRec(force){
   if(!v){ $("#recCard").innerHTML='<div class="empty">影片庫裡還沒有每日訓練影片</div>'; return; }
   $("#recCard").innerHTML = `<div class="rec">
     <div class="thumb" style="background-image:url(${thumb(v.id)})">${v.min?`<span class="len">${v.min} 分</span>`:""}</div>
-    <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px">${esc(v.title)}</div>
+    <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px">${v.isNew&&!S.logs.some(l=>l.id===v.id)?`<span class="tag" style="background:var(--accent);color:#fff;margin-right:4px">NEW</span>`:""}${esc(v.title)}</div>
       <div class="tags"><span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]||""}</span><span class="tag">${SRC_TXT[v.src]||""}</span></div>
       <button class="primary" style="margin-top:10px" onclick="openPlayer('${v.id}')">▶ 開始</button></div></div>`;
 }
@@ -549,18 +549,19 @@ function chips(el, opts, cur, cb){
   el.querySelectorAll("button").forEach(b=>b.onclick=()=>cb(b.dataset.k));
 }
 function renderLib(){
-  chips($("#fSrc"), [["all","全部來源"],["game","健身拳擊"],["coach","教練跟練"],["mine","自己加的"]], fSrc, k=>{fSrc=k;renderLib();});
+  chips($("#fSrc"), [["all","全部來源"],["new","🆕 新影片"],["game","健身拳擊"],["coach","教練跟練"],["mine","自己加的"]], fSrc, k=>{fSrc=k;renderLib();});
   chips($("#fType"), [["all","所有類型"],["daily","每日訓練"],["tutorial","動作教學"],["stretch","伸展"]], fType, k=>{fType=k;renderLib();});
   chips($("#fInt"), [["all","所有強度"],["light","輕"],["normal","一般"],["hard","高強度"]], fInt, k=>{fInt=k;renderLib();});
   chips($("#fLen"), [["all","所有長度"],["s","15 分內"],["m","16–30 分"],["l","30 分以上"],["unk","長度未知"]], fLen, k=>{fLen=k;renderLib();});
   const cnt={}; S.logs.forEach(l=>cnt[l.id]=(cnt[l.id]||0)+1);
-  const list = S.videos.filter(v=>(fSrc==="all"||v.src===fSrc)&&(fType==="all"||v.type===fType)&&(fInt==="all"||v.int===fInt)&&lenOk(v));
-  $("#libCount").textContent = `共 ${list.length} 部${list.length!==S.videos.length?`（全部 ${S.videos.length} 部）`:""}・長度未知的影片播放一次就會自動補上`;
+  const list = S.videos.filter(v=>(fSrc==="all"||(fSrc==="new"?v.isNew:v.src===fSrc))&&(fType==="all"||v.type===fType)&&(fInt==="all"||v.int===fInt)&&lenOk(v));
+  list.sort((a,b)=>(b.isNew?1:0)-(a.isNew?1:0) || (a.isNew&&b.isNew ? (b.published||"").localeCompare(a.published||"") : 0));
+  $("#libCount").textContent = (S.newUpdated?`新影片清單更新於 ${S.newUpdated}・`:"") + `共 ${list.length} 部${list.length!==S.videos.length?`（全部 ${S.videos.length} 部）`:""}・長度未知的影片播放一次就會自動補上`;
   $("#libList").innerHTML = list.length ? list.map(v=>`
     <div class="item" data-id="${v.id}">
       <div class="thumb" style="width:110px;background-image:url(${thumb(v.id)})">${v.min?`<span class="len">${v.min} 分</span>`:""}</div>
       <div class="meta"><div class="t">${esc(v.title)}</div>
-        <div class="tags"><span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]||""}</span><span class="tag">${SRC_TXT[v.src]||""}</span>${cnt[v.id]?`<span class="tag done">打過 ${cnt[v.id]} 次</span>`:""}${v.noEmbed?`<span class="tag hard">需到 YouTube 看</span>`:""}</div></div>
+        <div class="tags"><span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]||""}</span><span class="tag">${SRC_TXT[v.src]||""}</span>${cnt[v.id]?`<span class="tag done">打過 ${cnt[v.id]} 次</span>`:""}${v.noEmbed?`<span class="tag hard">需到 YouTube 看</span>`:""}${v.isNew&&!cnt[v.id]?`<span class="tag" style="background:var(--accent);color:#fff">NEW</span>`:""}${v.published?`<span class="tag">${v.published.slice(5).replace("-","/")} 上傳</span>`:""}</div></div>
       <button class="ghost" data-del="${v.id}" title="刪除" style="padding:6px 9px">🗑</button>
     </div>`).join("") : '<div class="empty">沒有符合條件的影片</div>';
   $("#libList").querySelectorAll(".item").forEach(it=>it.onclick=e=>{
@@ -811,7 +812,24 @@ function playSplash(after){
 }
 $("#replaySplash").onclick=()=>playSplash();
 
+/* ---------- 每日新影片 ---------- */
+async function syncNewVideos(){
+  try{
+    const r = await fetch("videos-new.json?t="+Date.now(), {cache:"no-store"});
+    if(!r.ok) return;
+    const d = await r.json(); if(!Array.isArray(d.videos)) return;
+    const have = new Set(S.videos.map(v=>v.id)); let n=0;
+    d.videos.forEach(v=>{ if(v && v.id && !have.has(v.id) && !S.deleted.includes(v.id)){ S.videos.push({...v, isNew:true}); n++; } });
+    // 超過 14 天的新影片就不再標 NEW
+    const cut = new Date(); cut.setDate(cut.getDate()-14); const ck = dkey(cut);
+    S.videos.forEach(v=>{ if(v.isNew && (v.added||v.published||"9") < ck) v.isNew=false; });
+    S.newUpdated = d.updated||""; save();
+    if(n){ toast(`影片庫新增 ${n} 部新影片 🆕`); if(curView==="lib") renderLib(); else { recId=null; renderHome(); } }
+  }catch(e){}
+}
+
 renderHome();
+setTimeout(syncNewVideos, 2600);
 playSplash(()=>{ if(!S.cls) openClassPick("new"); });
 
 /* ---------- PWA ---------- */
