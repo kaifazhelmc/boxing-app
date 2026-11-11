@@ -954,7 +954,7 @@ setTimeout(syncNewVideos, 2600);
 playSplash(()=>{ if(!S.cls) openClassPick("new"); });
 
 /* ---------- PWA ---------- */
-const APP_VERSION = "2026.11.11-7";
+const APP_VERSION = "2026.11.11-8";
 if("serviceWorker" in navigator && location.protocol==="https:"){
   navigator.serviceWorker.register("sw.js", {updateViaCache:"none"}).then(reg=>{
     // 每次回到 App 都檢查有沒有新版
