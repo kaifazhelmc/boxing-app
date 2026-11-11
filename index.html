@@ -256,8 +256,23 @@ a{color:var(--accent2)}
     <button id="chgCls">更換職業（等級保留）</button>
     <button id="replaySplash" class="ghost">重播進場動畫</button>
   </div>
-  <h2>備份與還原</h2>
-  <div class="sub">資料只存在這台裝置的瀏覽器裡。換手機或清除瀏覽器資料前，記得先備份。</div>
+  <h2>Google 雲端備份</h2>
+  <div class="card" id="cloudCard">
+    <div class="sub" id="cloudStatus">尚未設定</div>
+    <label>備份網址（Apps Script 網頁應用程式網址）</label>
+    <input id="cloudUrl" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
+    <label>備份密碼（跟 Apps Script 裡的 SECRET 一樣）</label>
+    <input id="cloudKey" type="password" autocomplete="off">
+    <div class="row" style="margin-top:12px">
+      <button class="primary" id="cloudSave">儲存設定並測試</button>
+      <button id="cloudNow">立即備份</button>
+      <button id="cloudLoad">從雲端還原</button>
+    </div>
+    <div class="sub" style="margin-top:10px">設定好之後，每次按「完成」都會自動備份到你的 Google 雲端硬碟「拳擊跟練備份」資料夾，並保留最近 30 天的每日快照。
+      <a href="https://github.com/kaifazhelmc/boxing-app/blob/main/apps-script/README.md" target="_blank" rel="noopener">設定教學</a></div>
+  </div>
+  <h2>手動備份與還原</h2>
+  <div class="sub">資料平常存在這台裝置的瀏覽器裡。沒設定雲端備份的話，換手機或清除瀏覽器資料前記得先備份。</div>
   <div class="row" style="margin-top:10px">
     <button id="expBtn">複製備份資料</button>
     <button id="impBtn">貼上還原</button>
@@ -578,6 +593,7 @@ function askDelete(id, btn){
 
 /* ---------- 紀錄 ---------- */
 function renderHist(){
+  try{ renderCloud(); }catch(e){}
   const c=CLASSES[S.cls];
   if(c){
     $("#clsInfo").innerHTML = `<div class="row"><div class="emb" style="width:44px;height:44px;font-size:22px;border-radius:12px;background:${c.c2}">${c.emo}</div>
@@ -685,6 +701,7 @@ $("#doneBtn").onclick=()=>{
   recId=null; closePlayer(); go("home");
   renderHero(before.lv===after.lv ? before.pct : 0);
   showResult(g, before, after);
+  cloudBackup(true);
 };
 
 /* ---------- 結算畫面 ---------- */
@@ -707,7 +724,7 @@ function showResult(g, before, after){
 function advance(){
   const lv = lvInfo(totalXp()).lv; if(!canAdvance(lv)) return;
   const c = CLASSES[S.cls], old = tierName();
-  S.tier++; save();
+  S.tier++; save(); cloudDirty=true;
   const fin = S.tier === TIER_LV.length-1;
   fxOpen(`
     <div class="emb" style="background:${c.c2}">${c.emo}</div>
@@ -741,7 +758,7 @@ function renderPick(){
 }
 $("#cpGo").onclick=()=>{
   if(!pickCls) return;
-  S.cls=pickCls; S.name=$("#cpName").value.trim()||"拳手"; save();
+  S.cls=pickCls; S.name=$("#cpName").value.trim()||"拳手"; save(); cloudDirty=true;
   $("#classPick").classList.remove("on");
   const c=CLASSES[S.cls];
   if(pickMode==="new"){
@@ -811,6 +828,58 @@ function playSplash(after){
   sp.onclick=close; setTimeout(close, 2300);
 }
 $("#replaySplash").onclick=()=>playSplash();
+
+/* ---------- Google 雲端備份 ---------- */
+if(!S.cloud) S.cloud={url:"",key:"",last:""};
+function backupData(){ const {pos, ...rest} = S; const d={...rest}; delete d.cloud; return {...d, exportedAt:new Date().toISOString()}; }
+async function cloudCall(action, data){
+  if(!S.cloud.url || !S.cloud.key) throw new Error("還沒設定雲端備份");
+  const r = await fetch(S.cloud.url, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body: JSON.stringify({key:S.cloud.key, action, data})});
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"失敗");
+  return j;
+}
+function fmtTime(iso){ if(!iso) return ""; const d=new Date(iso); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function renderCloud(){
+  if(!$("#cloudUrl")) return;
+  $("#cloudUrl").value=S.cloud.url||""; $("#cloudKey").value=S.cloud.key||"";
+  $("#cloudStatus").innerHTML = !S.cloud.url ? "尚未設定" :
+    (S.cloud.err ? `<span style="color:var(--accent)">上次備份失敗：${esc(S.cloud.err)}</span>` :
+     S.cloud.last ? `<span style="color:var(--ok)">✓ 已啟用・上次備份 ${fmtTime(S.cloud.last)}</span>` : "已設定，還沒備份過");
+}
+let cloudBusy=false;
+async function cloudBackup(silent){
+  if(!S.cloud.url || cloudBusy) return; cloudBusy=true;
+  try{ const j=await cloudCall("save", backupData()); S.cloud.last=j.saved; S.cloud.err=""; save(); if(!silent) toast("已備份到 Google 雲端硬碟 ☁️"); }
+  catch(e){ S.cloud.err=e.message; save(); if(!silent) toast("備份失敗："+e.message); }
+  finally{ cloudBusy=false; renderCloud(); }
+}
+$("#cloudSave").onclick=async()=>{
+  const url=$("#cloudUrl").value.trim(), key=$("#cloudKey").value;
+  if(url && !/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec/.test(url)){ toast("網址格式不對，要是 script.google.com/macros/s/…/exec"); return; }
+  S.cloud={url, key, last:S.cloud.last||"", err:""}; save();
+  if(!url){ renderCloud(); toast("已關閉雲端備份"); return; }
+  $("#cloudStatus").textContent="連線測試中…";
+  try{ await cloudCall("ping"); toast("連線成功！"); await cloudBackup(false); }
+  catch(e){ S.cloud.err=e.message; save(); renderCloud(); toast("連線失敗："+e.message); }
+};
+$("#cloudNow").onclick=()=>{ if(!S.cloud.url){ toast("請先填網址並按「儲存設定並測試」"); return; } cloudBackup(false); };
+$("#cloudLoad").onclick=async function(){
+  if(!S.cloud.url){ toast("請先完成雲端備份設定"); return; }
+  if(!this.dataset.c){ this.dataset.c=1; this.textContent="會覆蓋目前資料，再按一次確定"; setTimeout(()=>{ delete this.dataset.c; this.textContent="從雲端還原"; },4000); return; }
+  delete this.dataset.c; this.textContent="還原中…";
+  try{
+    const j=await cloudCall("load"); const d=j.data;
+    if(!d || !Array.isArray(d.logs) || !Array.isArray(d.videos)) throw new Error("備份內容格式不對");
+    const cloud=S.cloud; S={...S, ...d, cloud, pos:S.pos||{}}; save();
+    toast(`已還原 ${fmtTime(j.saved)} 的備份`); recId=null; renderHist(); renderHome();
+  }catch(e){ toast("還原失敗："+e.message); }
+  this.textContent="從雲端還原";
+};
+// 離開 App 時，如果有沒備份的變動就補備份
+let cloudDirty=false;
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden" && cloudDirty){ cloudDirty=false; cloudBackup(true); } });
 
 /* ---------- 每日新影片 ---------- */
 async function syncNewVideos(){

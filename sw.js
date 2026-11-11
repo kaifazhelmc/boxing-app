@@ -1,5 +1,5 @@
 // 拳擊跟練 service worker：快取 App 本身，讓沒網路時也能打開看紀錄（影片仍需網路）
-const CACHE = "boxing-v3";
+const CACHE = "boxing-v4";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
