@@ -21,7 +21,7 @@
 html,body{margin:0;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
   font-size:16px;line-height:1.5}
-body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 72px) env(safe-area-inset-left)}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 96px) env(safe-area-inset-left)}
 .wrap{max-width:720px;margin:0 auto;padding:16px}
 h1{font-size:22px;margin:4px 0 2px}
 h2{font-size:17px;margin:22px 0 10px}
@@ -68,11 +68,29 @@ button:active{transform:scale(.97)}
 .seg button.on{background:var(--accent);color:#fff}
 .bigdone{width:100%;padding:14px;font-size:16px;justify-content:center}
 /* nav */
-nav{position:fixed;left:0;right:0;bottom:0;background:rgba(20,22,28,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);
-  display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:10}
-nav button{background:none;border:0;color:var(--sub);flex-direction:column;gap:2px;font-size:12px;padding:4px 12px}
+/* iOS 風格懸浮玻璃導覽列 */
+nav{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  width:min(calc(100% - 40px),420px);height:64px;z-index:10;display:flex;align-items:stretch;padding:5px;border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.05)),rgba(30,33,41,.55);
+  -webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%);
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(0,0,0,.25),0 10px 30px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.3);
+  transition:width .35s cubic-bezier(.3,.9,.3,1.05),height .35s cubic-bezier(.3,.9,.3,1.05),bottom .35s}
+nav .pill{position:absolute;top:5px;bottom:5px;left:5px;border-radius:999px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.08));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 8px rgba(0,0,0,.25);
+  transition:transform .45s cubic-bezier(.3,1.35,.4,1),width .35s}
+nav button{position:relative;z-index:1;flex:1;background:none;border:0;border-radius:999px;color:rgba(235,238,245,.72);
+  flex-direction:column;justify-content:center;gap:2px;font-size:11px;font-weight:600;padding:0;transition:color .25s,transform .15s}
+nav button:active{transform:scale(.92)}
 nav button.on{color:var(--accent)}
-nav svg{width:22px;height:22px}
+nav svg{width:24px;height:24px;transition:transform .3s}
+nav button.on svg{transform:translateY(-1px) scale(1.06)}
+nav .lbl{transition:opacity .25s,max-height .3s;max-height:16px;overflow:hidden}
+/* 往下捲動時縮小 */
+nav.mini{width:min(calc(100% - 120px),260px);height:50px}
+nav.mini .lbl{opacity:0;max-height:0}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){nav{background:rgba(30,33,41,.96)}}
 .view{display:none}.view.on{display:block}
 /* forms */
 label{display:block;font-size:13px;color:var(--sub);margin:10px 0 4px}
@@ -81,7 +99,7 @@ textarea{min-height:110px;font-size:12px;font-family:ui-monospace,Menlo,monospac
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:20}
 .modal.on{display:flex}
 .sheet{background:var(--card);width:100%;max-width:720px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
-.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:30}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:30}
 .toast.on{opacity:1}
 .log{font-size:13px}
 .log div{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}
@@ -278,6 +296,7 @@ a{color:var(--accent2)}
     <button id="impBtn">貼上還原</button>
     <button id="resetLib" class="ghost">影片庫恢復預設</button>
   </div>
+  <div class="sub" id="verTxt" style="margin-top:24px;text-align:center"></div>
 </section>
 
 <!-- ========== 播放 ========== -->
@@ -313,10 +332,11 @@ a{color:var(--accent2)}
 
 </div>
 
-<nav>
-  <button data-v="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>今天</button>
-  <button data-v="lib"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>影片庫</button>
-  <button data-v="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>紀錄</button>
+<nav id="tabbar">
+  <div class="pill" id="pill"></div>
+  <button data-v="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span class="lbl">今天</span></button>
+  <button data-v="lib"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg><span class="lbl">影片庫</span></button>
+  <button data-v="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="lbl">紀錄</span></button>
 </nav>
 
 <!-- 新增影片 -->
@@ -613,11 +633,24 @@ function go(v){
   curView=v; $("#playerView").style.display="none";
   document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id===v));
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
+  $("#tabbar").classList.remove("mini"); requestAnimationFrame(movePill);
   document.querySelector("nav").style.display="flex";
   ({home:renderHome, lib:renderLib, hist:renderHist})[v]();
   scrollTo(0,0);
 }
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+function movePill(){
+  const nav=$("#tabbar"), on=nav.querySelector("button.on"), pill=$("#pill"); if(!on) return;
+  pill.style.width=on.offsetWidth+"px"; pill.style.transform=`translateX(${on.offsetLeft-5}px)`;
+}
+let lastY=0;
+addEventListener("scroll",()=>{
+  const y=scrollY, nav=$("#tabbar");
+  if(y>lastY+6 && y>80) nav.classList.add("mini"); else if(y<lastY-6 || y<40) nav.classList.remove("mini");
+  lastY=y;
+},{passive:true});
+$("#tabbar").addEventListener("transitionend",e=>{ if(e.target.id==="tabbar") movePill(); });
+addEventListener("resize",movePill);
 
 /* ---------- 播放器 ---------- */
 let player=null, apiReady=false, pendingId=null, curId=null, posTimer=null, wakeLock=null;
@@ -898,13 +931,31 @@ async function syncNewVideos(){
 }
 
 renderHome();
+requestAnimationFrame(movePill);
 setTimeout(syncNewVideos, 2600);
 playSplash(()=>{ if(!S.cls) openClassPick("new"); });
 
 /* ---------- PWA ---------- */
+const APP_VERSION = "2026.11.11-5";
 if("serviceWorker" in navigator && location.protocol==="https:"){
-  navigator.serviceWorker.register("sw.js").catch(()=>{});
+  navigator.serviceWorker.register("sw.js", {updateViaCache:"none"}).then(reg=>{
+    // 每次回到 App 都檢查有沒有新版
+    document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") reg.update().catch(()=>{}); });
+  }).catch(()=>{});
+  let reloaded=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(reloaded) return; reloaded=true; location.reload(); });
 }
+// 回到 App 時，如果伺服器上的版本比較新就重新整理
+async function checkVersion(){
+  try{
+    const r=await fetch("index.html?v="+Date.now(),{cache:"no-store"}); const t=await r.text();
+    const m=t.match(/APP_VERSION = "([^"]+)"/);
+    if(m && m[1]!==APP_VERSION && !$("#playerView").style.display.includes("block")){ toast("有新版本，更新中…"); setTimeout(()=>location.reload(),800); }
+  }catch(e){}
+}
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkVersion(); });
+setTimeout(checkVersion, 4000);
+if($("#verTxt")) $("#verTxt").textContent = "版本 "+APP_VERSION;
 </script>
 </body>
 </html>
