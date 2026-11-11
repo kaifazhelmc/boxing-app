@@ -212,7 +212,16 @@ function head(cls,tier,p){
     ${cls==="striker"&&tier>=1 ? `<g transform="rotate(-35 128 66)"><rect x="121" y="62" width="14" height="7" rx="3" fill="#ffe2c4" stroke="${INK}" stroke-width="1.8"/><rect x="125.5" y="62" width="5" height="7" fill="#f2c9a0"/></g>` : ""}`;
 }
 
+// SpriteCook 生成的角色圖（img/chars/{cls}-{tier}.png）。有列在這裡的階級用 PNG，其餘沿用 SVG；PNG 載入失敗也會自動換回 SVG。
+const PNG_TIERS = { striker:[1], swift:[1], guard:[1], monk:[1] };
 window.charSVG = function(cls, tier, opt={}){
+  const t = Math.max(0, Math.min(4, tier|0));
+  if ((PNG_TIERS[cls]||[]).includes(t)) {
+    return `<img src="img/chars/${cls}-${t}.png" class="char charimg${opt.anim?" bob":""}" alt="${cls} ${t}" draggable="false" onerror="this.outerHTML=window.charSVGRaw('${cls}',${t},{anim:${!!opt.anim}})">`;
+  }
+  return window.charSVGRaw(cls, t, opt);
+};
+window.charSVGRaw = function(cls, tier, opt={}){
   const p = PAL[cls] || PAL.striker; tier = Math.max(0, Math.min(4, tier|0)); const id = ++uid;
   const bob = opt.anim ? `<animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="1.2s" repeatCount="indefinite"/>` : "";
   return `<svg viewBox="0 0 200 215" xmlns="http://www.w3.org/2000/svg" class="char" aria-label="${cls} ${tier}">
