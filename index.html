@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#14161c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,7 +22,13 @@ html,body{margin:0;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
   font-size:16px;line-height:1.5}
 body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 96px) env(safe-area-inset-left)}
-.wrap{max-width:720px;margin:0 auto;padding:16px}
+/* 鎖定縮放與左右滑動：只允許上下捲動 */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden;overscroll-behavior-x:none;touch-action:pan-y}
+body{overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none;touch-action:pan-y;width:100%;max-width:100vw;position:relative}
+#fx,#splash,#classPick,.modal{overflow-x:hidden;touch-action:pan-y;overscroll-behavior:contain}
+#fx{overflow:hidden}
+.wrap{max-width:720px;margin:0 auto;padding:16px;overflow-x:clip}
+img,svg,iframe{max-width:100%}
 h1{font-size:22px;margin:4px 0 2px}
 h2{font-size:17px;margin:22px 0 10px}
 .sub{color:var(--sub);font-size:13px}
@@ -94,8 +100,8 @@ nav.mini .lbl{opacity:0;max-height:0}
 .view{display:none}.view.on{display:block}
 /* forms */
 label{display:block;font-size:13px;color:var(--sub);margin:10px 0 4px}
-input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font-size:15px;font-family:inherit}
-textarea{min-height:110px;font-size:12px;font-family:ui-monospace,Menlo,monospace}
+input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font-size:16px;font-family:inherit}
+textarea{min-height:110px;font-size:16px;font-family:ui-monospace,Menlo,monospace}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:20}
 .modal.on{display:flex}
 .sheet{background:var(--card);width:100%;max-width:720px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
@@ -980,6 +986,10 @@ $("#resetLib").onclick=function(){
   delete this.dataset.c; this.textContent="影片庫恢復預設"; toast("已恢復預設影片");
 };
 
+/* ---------- 鎖定縮放 ---------- */
+["gesturestart","gesturechange","gestureend"].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
+document.addEventListener("touchmove",e=>{ if(e.touches.length>1) e.preventDefault(); },{passive:false});
+
 /* ---------- 進場動畫 ---------- */
 function playSplash(after){
   const sp=$("#splash");
@@ -1066,7 +1076,7 @@ setTimeout(syncNewVideos, 2600);
 playSplash(()=>{ if(!S.cls) openClassPick("new"); });
 
 /* ---------- PWA ---------- */
-const APP_VERSION = "2026.11.11-9";
+const APP_VERSION = "2026.11.11-10";
 if("serviceWorker" in navigator && location.protocol==="https:"){
   navigator.serviceWorker.register("sw.js", {updateViaCache:"none"}).then(reg=>{
     // 每次回到 App 都檢查有沒有新版
