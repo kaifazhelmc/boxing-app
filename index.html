@@ -150,6 +150,18 @@ a{color:var(--accent2)}
 @media(min-width:620px){.cgrid{grid-template-columns:repeat(4,1fr)}}
 .cc{border:2px solid var(--line);border-radius:16px;padding:14px 12px;background:var(--card);cursor:pointer;text-align:center;transition:.15s}
 .cc .emb{margin:0 auto 8px}
+/* 角色圖 */
+.charbox{flex-shrink:0;width:104px;height:112px;margin:-8px -4px -10px -8px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+.charbox svg,.cfig svg,.tierfig svg{width:100%;height:100%;display:block}
+.cfig{width:110px;height:118px;margin:0 auto 4px}
+.fxchar{width:190px;height:204px;margin:0 auto;animation:spinIn 1s cubic-bezier(.2,1.2,.4,1) both}
+.fxold{position:absolute;left:50%;top:0;width:190px;height:204px;margin-left:-95px;animation:oldOut .9s ease-in both;filter:brightness(2.2) saturate(0)}
+@keyframes oldOut{0%{opacity:1;transform:scale(1)}60%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(.6)}}
+.tiers{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:10px}
+.tierfig{text-align:center;font-size:11px;color:var(--sub);line-height:1.3}
+.tierfig .f{height:72px}
+.tierfig.lock .f{filter:brightness(0) opacity(.35)}
+.tierfig.cur{color:var(--accent2);font-weight:700}
 .cc b{display:block;font-size:16px}
 .cc .d{font-size:12px;color:var(--sub);margin-top:4px;min-height:36px}
 .cc .bn{font-size:12px;margin-top:8px;padding:4px 6px;border-radius:8px;background:var(--card2);color:var(--accent2)}
@@ -360,6 +372,7 @@ a{color:var(--accent2)}
 
 <div class="toast" id="toast"></div>
 
+<script src="chars.js"></script>
 <script>
 /* ---------- 預設影片 ---------- */
 // src: game = 健身拳擊遊戲畫面, coach = 真人教練跟練
@@ -504,7 +517,7 @@ function renderHero(animFrom){
   $("#hero").style.setProperty("--c1", c.c1); $("#hero").style.setProperty("--c2", c.c2);
   $("#hero").innerHTML = `
     <div class="top">
-      <div class="emb">${c.emo}</div>
+      <div class="charbox">${charSVG(S.cls,S.tier,{anim:true})}</div>
       <div style="flex:1;min-width:0">
         <div class="sub">${esc(S.name||"拳手")}</div>
         <div class="cls">${tierName()}</div>
@@ -616,9 +629,9 @@ function renderHist(){
   try{ renderCloud(); }catch(e){}
   const c=CLASSES[S.cls];
   if(c){
-    $("#clsInfo").innerHTML = `<div class="row"><div class="emb" style="width:44px;height:44px;font-size:22px;border-radius:12px;background:${c.c2}">${c.emo}</div>
+    $("#clsInfo").innerHTML = `<div class="row"><div style="width:64px;height:68px">${charSVG(S.cls,S.tier)}</div>
       <div><b>${tierName()}</b>　<span class="sub">${c.name}系・Lv ${lvInfo(totalXp()).lv}・總經驗 ${totalXp()}</span><div class="sub" style="color:var(--accent2)">${c.bonus}</div></div></div>
-      <div class="path">${c.tiers.map((t,i)=>`${i<=S.tier?"★":"☆"} Lv ${TIER_LV[i]}　${i===S.tier?`<b style="color:var(--text)">${t}</b>`:t}`).join("<br>")}</div>`;
+      <div class="tiers">${c.tiers.map((t,i)=>`<div class="tierfig ${i>S.tier?"lock":""} ${i===S.tier?"cur":""}"><div class="f">${charSVG(S.cls,i)}</div>${i>S.tier?"？？？":t}<br>Lv ${TIER_LV[i]}</div>`).join("")}</div>`;
   }
   if(!S.logs.length){ $("#logList").innerHTML='<div class="empty">還沒有紀錄，打完一部影片按「完成」就會出現在這裡</div>'; return; }
   $("#logList").innerHTML = S.logs.slice().reverse().slice(0,60).map(l=>{
@@ -646,7 +659,9 @@ function movePill(){
 let lastY=0;
 addEventListener("scroll",()=>{
   const y=scrollY, nav=$("#tabbar");
+  const was=nav.classList.contains("mini");
   if(y>lastY+6 && y>80) nav.classList.add("mini"); else if(y<lastY-6 || y<40) nav.classList.remove("mini");
+  if(was!==nav.classList.contains("mini")){ movePill(); setTimeout(movePill,180); setTimeout(movePill,380); }
   lastY=y;
 },{passive:true});
 $("#tabbar").addEventListener("transitionend",e=>{ if(e.target.id==="tabbar") movePill(); });
@@ -760,8 +775,8 @@ function advance(){
   S.tier++; save(); cloudDirty=true;
   const fin = S.tier === TIER_LV.length-1;
   fxOpen(`
-    <div class="emb" style="background:${c.c2}">${c.emo}</div>
-    <div class="big" style="margin-top:16px;font-size:34px">${fin?"最終轉職！":"轉職成功！"}</div>
+    <div style="position:relative"><div class="fxold">${charSVG(S.cls,S.tier-1)}</div><div class="fxchar" style="animation-delay:.6s">${charSVG(S.cls,S.tier,{anim:true})}</div></div>
+    <div class="big" style="margin-top:8px;font-size:34px">${fin?"最終轉職！":"轉職成功！"}</div>
     <div class="oldnew"><s>${old}</s> → <b>${tierName()}</b></div>
     <div class="stars" style="font-size:20px">${"★".repeat(S.tier+1)}${"☆".repeat(TIER_LV.length-1-S.tier)}</div>
     <div class="sub" style="margin-top:10px">${fin?"你已經走到這條路的盡頭。拳的道路沒有終點，繼續打下去吧。":`下一次轉職：Lv ${TIER_LV[S.tier+1]}「${tierName(S.cls,S.tier+1)}」`}</div>
@@ -782,11 +797,11 @@ function openClassPick(mode){
 function renderPick(){
   $("#cgrid").innerHTML = Object.entries(CLASSES).map(([k,c])=>`
     <div class="cc ${k===pickCls?"on":""}" data-k="${k}">
-      <div class="emb" style="background:${c.c2}">${c.emo}</div><b>${c.name}</b>
+      <div class="cfig">${charSVG(k,1,{anim:k===pickCls})}</div><b>${c.name}</b>
       <div class="d">${c.desc}</div><div class="bn">${c.bonus}</div></div>`).join("");
   $("#cgrid").querySelectorAll(".cc").forEach(el=>el.onclick=()=>{ pickCls=el.dataset.k; renderPick(); });
   const c=CLASSES[pickCls];
-  $("#cpPath").innerHTML = c ? `<b style="color:var(--text)">${c.name}的轉職路線</b><br>`+c.tiers.map((t,i)=>`Lv ${TIER_LV[i]}　${t}`).join("　→　") : "先點一個職業，看看它的轉職路線";
+  $("#cpPath").innerHTML = c ? `<b style="color:var(--text)">${c.name}的轉職路線</b><div class="tiers">${c.tiers.map((t,i)=>`<div class="tierfig"><div class="f">${charSVG(pickCls,i)}</div>${t}<br>Lv ${TIER_LV[i]}</div>`).join("")}</div>` : "先點一個職業，看看它的轉職路線";
   $("#cpGo").disabled = !c; $("#cpGo").style.opacity = c?1:.4;
 }
 $("#cpGo").onclick=()=>{
@@ -795,8 +810,8 @@ $("#cpGo").onclick=()=>{
   $("#classPick").classList.remove("on");
   const c=CLASSES[S.cls];
   if(pickMode==="new"){
-    fxOpen(`<div class="emb" style="background:${c.c2}">${c.emo}</div>
-      <div class="big" style="margin-top:16px;font-size:30px">冒險開始！</div>
+    fxOpen(`<div class="fxchar">${charSVG(S.cls,S.tier,{anim:true})}</div>
+      <div class="big" style="margin-top:8px;font-size:30px">冒險開始！</div>
       <div class="oldnew"><b>${esc(S.name)}</b>・${tierName()}</div>
       <div class="sub">每打完一部影片按「完成」，就能拿經驗值升級。<br>Lv 10 會迎來第一次轉職。</div>
       <button class="primary bigdone" style="margin-top:18px" data-fxclose>出發</button>`, true);
@@ -936,7 +951,7 @@ setTimeout(syncNewVideos, 2600);
 playSplash(()=>{ if(!S.cls) openClassPick("new"); });
 
 /* ---------- PWA ---------- */
-const APP_VERSION = "2026.11.11-5";
+const APP_VERSION = "2026.11.11-6";
 if("serviceWorker" in navigator && location.protocol==="https:"){
   navigator.serviceWorker.register("sw.js", {updateViaCache:"none"}).then(reg=>{
     // 每次回到 App 都檢查有沒有新版

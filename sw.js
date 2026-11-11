@@ -1,7 +1,7 @@
 // 拳擊跟練 service worker
 // 一律先向網路要最新版（略過瀏覽器 HTTP 快取），沒網路時才用快取，讓 App 一更新就生效。
-const CACHE = "boxing-v5";
-const FILES = ["./", "./index.html", "./manifest.json", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
+const CACHE = "boxing-v6";
+const FILES = ["./", "./index.html", "./chars.js", "./manifest.json", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: "reload" })))).then(() => self.skipWaiting()));
