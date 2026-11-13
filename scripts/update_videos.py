@@ -105,16 +105,59 @@ def nice_title(raw):
     return t[:60], None
 
 
-def video_seconds(video_id):
-    """讀影片頁面裡的 lengthSeconds；讀不到回傳 None"""
-    html = get(f"https://www.youtube.com/watch?v={video_id}&hl=zh-TW")
-    m = re.search(r'"lengthSeconds":"(\d+)"', html) or re.search(r'itemprop="duration" content="PT(?:(\d+)H)?(\d+)M(\d+)S"', html)
+def iso_dur(d):
+    m = re.match(r"P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", d or "")
     if not m:
         return None
-    if m.lastindex == 1:
-        return int(m.group(1))
-    h, mi, se = (int(x) if x else 0 for x in m.groups())
-    return h * 3600 + mi * 60 + se
+    dd, h, mi, se = (int(x) if x else 0 for x in m.groups())
+    return dd * 86400 + h * 3600 + mi * 60 + se
+
+
+def seconds_by_api(ids, key):
+    """官方 API（有設定 YOUTUBE_API_KEY 時）：一次查 50 部，最準"""
+    out = {}
+    for i in range(0, len(ids), 50):
+        q = urllib.parse.urlencode({"part": "contentDetails", "id": ",".join(ids[i:i + 50]), "key": key})
+        data = json.loads(get("https://www.googleapis.com/youtube/v3/videos?" + q))
+        for it in data.get("items", []):
+            sec = iso_dur(it["contentDetails"].get("duration"))
+            if sec:
+                out[it["id"]] = sec
+    return out
+
+
+DIAG = {"printed": False}
+
+
+def video_seconds(video_id):
+    """沒有 API 金鑰時：先試 YouTube 內部播放器 API，再試影片頁面；讀不到回傳 None"""
+    try:
+        body = json.dumps({"videoId": video_id, "context": {"client": {"clientName": "WEB", "clientVersion": "2.20250101.00.00", "hl": "zh-TW"}}}).encode()
+        req = urllib.request.Request("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", data=body,
+                                     headers={**UA, "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            j = json.loads(r.read().decode("utf-8", "replace"))
+        sec = int((j.get("videoDetails") or {}).get("lengthSeconds") or 0)
+        if sec:
+            return sec
+        if not DIAG["printed"]:
+            print("  player API 沒有長度：", (j.get("playabilityStatus") or {}).get("status"), (j.get("playabilityStatus") or {}).get("reason"))
+    except Exception as ex:
+        if not DIAG["printed"]:
+            print("  player API 失敗：", ex)
+    html = get(f"https://www.youtube.com/watch?v={video_id}&hl=zh-TW")
+    m = re.search(r'\\?"lengthSeconds\\?":\\?"(\d+)', html) or re.search(r'"approxDurationMs":"(\d+)"', html)
+    if m:
+        v = int(m.group(1))
+        return v // 1000 if "approxDurationMs" in m.group(0) else v
+    m = re.search(r'itemprop="duration" content="(PT[^"]+)"', html)
+    if m:
+        return iso_dur(m.group(1))
+    if not DIAG["printed"]:
+        DIAG["printed"] = True
+        t = re.search(r"<title>(.*?)</title>", html, re.S)
+        print(f"  影片頁面讀不到長度（{len(html)} 字元，標題：{t.group(1)[:60] if t else '無'}，含 not a bot：{'not a bot' in html}）")
+    return None
 
 
 def classify(title, desc=""):
@@ -220,19 +263,27 @@ def main():
     vids.sort(key=lambda v: v.get("published", ""), reverse=True)
 
     # 抓影片長度：補上分鐘數，並排除 5 分鐘以下的短片
-    fetched = 0
-    for v in vids:
-        if "sec" in v or fetched >= MAX_LEN_FETCH:
-            continue
+    need = [v for v in vids if "sec" not in v]
+    secs = {}
+    if key and need:
         try:
-            sec = video_seconds(v["id"])
-            fetched += 1
-            if sec:
-                v["sec"] = sec
-                v["min"] = max(1, round(sec / 60))
+            secs = seconds_by_api([v["id"] for v in need], key)
         except Exception as ex:
-            print(f"! 長度讀取失敗 {v['id']}：{ex}")
-        time.sleep(0.4)
+            print(f"! API 查長度失敗：{ex}")
+    fetched = 0
+    for v in need:
+        sec = secs.get(v["id"])
+        if not sec and fetched < MAX_LEN_FETCH:
+            try:
+                sec = video_seconds(v["id"])
+            except Exception as ex:
+                print(f"! 長度讀取失敗 {v['id']}：{ex}")
+            fetched += 1
+            time.sleep(0.4)
+        if sec:
+            v["sec"] = sec
+            v["min"] = max(1, round(sec / 60))
+    print(f"長度：{sum(1 for v in vids if 'sec' in v)} / {len(vids)} 部已知")
     vids = [v for v in vids if not v.get("sec") or v["sec"] >= MIN_SECONDS]
 
     per = {}
