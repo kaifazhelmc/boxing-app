@@ -94,7 +94,7 @@ nav svg{width:24px;height:24px;transition:transform .3s}
 nav button.on svg{transform:translateY(-1px) scale(1.06)}
 nav .lbl{transition:opacity .25s,max-height .3s;max-height:16px;overflow:hidden}
 /* 往下捲動時縮小 */
-nav.mini{width:min(calc(100% - 120px),260px);height:50px}
+nav.mini{width:min(calc(100% - 100px),290px);height:50px}
 nav.mini .lbl{opacity:0;max-height:0}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){nav{background:rgba(30,33,41,.96)}}
 .view{display:none}.view.on{display:block}
@@ -197,6 +197,38 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
 .oldnew{display:flex;align-items:center;justify-content:center;gap:10px;margin:12px 0;font-size:15px}
 .oldnew s{color:var(--sub)}
 .oldnew b{color:var(--accent2);font-size:20px}
+/* ===== v2 新增 ===== */
+.stat .goalbar{height:5px;border-radius:999px;background:var(--card2);margin:6px 14px 4px;overflow:hidden}
+.stat .goalbar i{display:block;height:100%;background:var(--ok);border-radius:999px}
+.nag{margin-top:12px;border-color:#5a4a1e;background:linear-gradient(135deg,#3a3016,var(--card) 70%)}
+.searchrow{display:flex;gap:8px;margin:10px 0 8px}
+.searchrow input{flex:1}
+.searchrow button{flex-shrink:0}
+.fbadge{background:var(--accent);color:#fff;border-radius:999px;font-size:11px;padding:0 6px;margin-left:2px}
+.activef{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.activef button{font-size:12px;padding:4px 10px;border-radius:999px}
+.fgroup{margin-top:12px}
+.fgroup .row{margin-top:6px}
+.item .fav{border:0;background:none;font-size:20px;padding:6px;color:var(--sub)}
+.item .fav.on{color:var(--accent2)}
+.item.pressing{transform:scale(.98);transition:transform .3s}
+.actlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.actlist button{justify-content:center;padding:12px}
+.danger{color:#ff8a73}
+.segsm button{padding:8px 4px;font-size:13px}
+.sumgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.sumgrid b{display:block;font-size:20px}
+.sumgrid span{font-size:12px;color:var(--sub)}
+.bars{display:flex;align-items:flex-end;gap:4px;height:110px;margin-top:10px}
+.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--sub)}
+.bars .b i{display:block;width:100%;max-width:22px;border-radius:5px 5px 2px 2px;background:var(--card2);min-height:3px}
+.bars .b.hit i{background:var(--ok)}
+.bars .b.cur i{outline:2px solid var(--accent2)}
+.bars .b em{font-style:normal;font-size:10px;color:var(--text);margin-bottom:2px}
+.wkhead{font-size:12px;color:var(--sub);padding:12px 0 4px;display:flex;justify-content:space-between}
+.logrow{cursor:pointer}
+.logrow:active{background:var(--card2)}
+.attn{animation:pulse 1.2s infinite;border-color:var(--accent2)!important;transform:scale(1.04)}
 @media (prefers-reduced-motion: reduce){*{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important}}
 </style>
 </head>
@@ -251,15 +283,16 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
 
   <h2>本週紀錄</h2>
   <div class="stats">
+    <div class="stat"><b id="sWeek">0</b><div class="goalbar"><i id="sGoalBar" style="width:0"></i></div><span id="sWeekLbl">本週目標（天）</span></div>
     <div class="stat"><b id="sStreak">0</b><span>連續天數</span></div>
-    <div class="stat"><b id="sWeek">0</b><span>本週次數</span></div>
-    <div class="stat"><b id="sMin">0</b><span>累計分鐘</span></div>
+    <div class="stat"><b id="sMin">0</b><span>本週分鐘</span></div>
     <div class="stat"><b id="sKcal">0</b><span>本週消耗 kcal</span></div>
   </div>
   <div class="card" style="margin-top:8px">
     <div class="sub">最近 14 天</div>
     <div class="dots" id="dots"></div>
   </div>
+  <div id="nagBox"></div>
 
   <h2>今天打什麼？</h2>
   <div class="row" style="margin-bottom:10px">
@@ -279,10 +312,11 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
 <!-- ========== 影片庫 ========== -->
 <section id="lib" class="view">
   <div class="row between"><h1>影片庫</h1><button class="primary" id="addBtn">＋ 新增</button></div>
-  <div class="row" style="margin:10px 0 4px" id="fSrc"></div>
-  <div class="row" style="margin-bottom:4px" id="fType"></div>
-  <div class="row" style="margin-bottom:4px" id="fInt"></div>
-  <div class="row" style="margin-bottom:8px" id="fLen"></div>
+  <div class="searchrow">
+    <input id="libQ" type="search" placeholder="搜尋標題、教練、頻道" autocomplete="off">
+    <button id="filterBtn">篩選<span id="fCount"></span></button>
+  </div>
+  <div class="activef" id="activeF"></div>
   <div class="sub" id="libCount" style="margin-bottom:10px"></div>
   <div class="list" id="libList"></div>
 </section>
@@ -290,16 +324,37 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
 <!-- ========== 紀錄 ========== -->
 <section id="hist" class="view">
   <h1>運動紀錄</h1>
-  <div class="card log" id="logList" style="margin-top:12px"></div>
-  <h2>職業</h2>
-  <div class="card" id="clsInfo"></div>
-  <div class="row" style="margin-top:10px">
-    <button id="chgCls">更換職業（等級保留）</button>
-    <button id="replaySplash" class="ghost">重播進場動畫</button>
+  <div class="card" style="margin-top:12px">
+    <div class="sumgrid" id="sumGrid"></div>
   </div>
+  <div class="card" style="margin-top:8px">
+    <div class="row between"><span class="sub">最近 12 週（每週打拳天數）</span><span class="sub" id="barsGoal"></span></div>
+    <div class="bars" id="bars"></div>
+  </div>
+  <h2>轉職圖鑑</h2>
+  <div class="card" id="clsInfo"></div>
+  <h2>每次訓練 <span class="sub" style="font-weight:400">點一下可以修改或刪除</span></h2>
+  <div class="card log" id="logList"></div>
+  <div class="row" style="justify-content:center;margin-top:8px"><button class="ghost" id="logMore" style="display:none">顯示更早的紀錄</button></div>
+</section>
+
+<!-- ========== 設定 ========== -->
+<section id="set" class="view">
+  <h1>設定</h1>
+  <h2>角色與目標</h2>
+  <div class="card">
+    <div id="setCls" class="sub"></div>
+    <div class="row" style="margin-top:10px">
+      <button id="chgCls">更換職業（等級保留）</button>
+    </div>
+    <label>每週目標（每週打拳幾天）</label>
+    <div class="seg segsm" id="goalSeg"></div>
+    <div class="sub" style="margin-top:6px">每週打到目標天數那一次，會多拿 100 經驗。漏打一天也沒關係，週目標比連續天數寬鬆。</div>
+  </div>
+
   <h2>健康與熱量</h2>
   <div class="card" id="hkCard">
-    <label>體重（公斤，用來估算熱量）</label>
+    <label style="margin-top:0">體重（公斤，用來估算熱量）</label>
     <input id="hkWeight" type="number" inputmode="decimal" placeholder="例如 75">
     <label>熱量來源</label>
     <div class="seg" id="hkMode">
@@ -313,7 +368,7 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
     <div class="row" style="margin-top:10px"><button id="hkLastBtn">⌚ 補登最近一筆</button></div>
   </div>
 
-  <h2>Google 雲端備份</h2>
+  <h2 id="cloudH">Google 雲端備份</h2>
   <div class="card" id="cloudCard">
     <div class="sub" id="cloudStatus">尚未設定</div>
     <label>備份網址（Apps Script 網頁應用程式網址）</label>
@@ -329,10 +384,14 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
       <a href="https://github.com/kaifazhelmc/boxing-app/blob/main/apps-script/README.md" target="_blank" rel="noopener">設定教學</a></div>
   </div>
   <h2>手動備份與還原</h2>
-  <div class="sub">資料平常存在這台裝置的瀏覽器裡。沒設定雲端備份的話，換手機或清除瀏覽器資料前記得先備份。</div>
+  <div class="sub">資料平常存在這台裝置的瀏覽器裡。備份內容包含紀錄、影片庫、職業與轉職進度、設定。</div>
   <div class="row" style="margin-top:10px">
     <button id="expBtn">複製備份資料</button>
     <button id="impBtn">貼上還原</button>
+  </div>
+  <h2>其他</h2>
+  <div class="row">
+    <button id="replaySplash" class="ghost">重播進場動畫</button>
     <button id="resetLib" class="ghost">影片庫恢復預設</button>
   </div>
   <div class="sub" id="verTxt" style="margin-top:24px;text-align:center"></div>
@@ -377,6 +436,7 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
   <button data-v="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span class="lbl">今天</span></button>
   <button data-v="lib"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg><span class="lbl">影片庫</span></button>
   <button data-v="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="lbl">紀錄</span></button>
+  <button data-v="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="lbl">設定</span></button>
 </nav>
 
 <!-- 新增影片 -->
@@ -396,6 +456,63 @@ img.charimg.bob{animation:charBob 1.2s ease-in-out infinite}
   <div class="sub" id="bkHint" style="margin:6px 0"></div>
   <textarea id="bkText"></textarea>
   <button class="primary bigdone" style="margin-top:12px" id="bkGo">確定</button>
+</div></div>
+
+<!-- 完成確認 -->
+<div class="modal" id="doneModal"><div class="sheet">
+  <div class="row between"><b>確認這次的訓練</b><button class="ghost" data-close>✕</button></div>
+  <div class="sub" id="dmTitle" style="margin-top:4px"></div>
+  <label>實際打了幾分鐘</label>
+  <input id="dmMin" type="number" inputmode="numeric" placeholder="分鐘">
+  <div class="sub" id="dmHint" style="margin-top:4px"></div>
+  <label>強度</label>
+  <div class="seg" id="dmInt"><button data-i="light">輕</button><button data-i="normal">一般</button><button data-i="hard">高強度</button></div>
+  <div class="sub" style="margin-top:4px">強度會記在這部影片上（長度未知時也會一起記下），下次不用再改。</div>
+  <button class="primary bigdone" style="margin-top:16px" id="dmGo">✓ 完成，結算經驗</button>
+</div></div>
+
+<!-- 修改紀錄 -->
+<div class="modal" id="logModal"><div class="sheet">
+  <div class="row between"><b>修改紀錄</b><button class="ghost" data-close>✕</button></div>
+  <div class="sub" id="lmTitle" style="margin-top:4px"></div>
+  <label>日期</label><input id="lmDate" type="date">
+  <label>分鐘</label><input id="lmMin" type="number" inputmode="numeric">
+  <label>強度</label>
+  <div class="seg" id="lmInt"><button data-i="light">輕</button><button data-i="normal">一般</button><button data-i="hard">高強度</button></div>
+  <label>消耗熱量 kcal（可留空）</label><input id="lmKcal" type="number" inputmode="numeric">
+  <div class="sub" id="lmXp" style="margin-top:8px"></div>
+  <button class="primary bigdone" style="margin-top:14px" id="lmSave">儲存修改</button>
+  <button class="ghost bigdone danger" style="margin-top:8px" id="lmDel">刪除這筆紀錄</button>
+</div></div>
+
+<!-- 影片選項 -->
+<div class="modal" id="vidModal"><div class="sheet">
+  <div class="row between"><b>影片選項</b><button class="ghost" data-close>✕</button></div>
+  <div class="sub" id="vmOrig" style="margin-top:4px"></div>
+  <label>名稱</label><input id="vmTitle">
+  <label>類型</label><select id="vmType"><option value="daily">每日訓練</option><option value="tutorial">動作教學</option><option value="stretch">伸展</option></select>
+  <label>強度</label>
+  <div class="seg" id="vmInt"><button data-i="light">輕</button><button data-i="normal">一般</button><button data-i="hard">高強度</button></div>
+  <label>長度（分鐘）</label><input id="vmMin" type="number" inputmode="numeric" placeholder="未知">
+  <div class="actlist">
+    <button class="primary" id="vmSave">儲存</button>
+    <button id="vmFav">☆ 加入最愛</button>
+    <button id="vmPlay">▶ 播放</button>
+    <button class="ghost danger" id="vmDel">刪除這部影片</button>
+  </div>
+</div></div>
+
+<!-- 篩選 -->
+<div class="modal" id="filterModal"><div class="sheet">
+  <div class="row between"><b>篩選影片</b><button class="ghost" data-close>✕</button></div>
+  <div class="fgroup"><span class="sub">來源</span><div class="row" id="fSrc"></div></div>
+  <div class="fgroup"><span class="sub">類型</span><div class="row" id="fType"></div></div>
+  <div class="fgroup"><span class="sub">強度</span><div class="row" id="fInt"></div></div>
+  <div class="fgroup"><span class="sub">長度</span><div class="row" id="fLen"></div></div>
+  <div class="row" style="margin-top:16px">
+    <button class="ghost" id="fReset" style="flex:1;justify-content:center">清除篩選</button>
+    <button class="primary" data-close style="flex:2;justify-content:center">看結果</button>
+  </div>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -458,7 +575,7 @@ const SRC_TXT = {game:"健身拳擊", coach:"教練跟練", mine:"自己加的"}
 const KEY = "boxingapp.v1";
 
 /* ---------- 儲存 ---------- */
-let S = {videos: DEFAULT_VIDEOS.map(v=>({...v})), logs: [], pos:{}, mood:"ok", speed:1, mirror:false, cls:null, name:"", tier:0};
+let S = {videos: DEFAULT_VIDEOS.map(v=>({...v})), logs: [], pos:{}, mood:"ok", speed:1, mirror:false, cls:null, name:"", tier:0, weekGoal:3};
 try{ const raw = localStorage.getItem(KEY); if(raw){ S = Object.assign(S, JSON.parse(raw)); } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 // 影片庫更新：把新版預設影片補進舊資料（自己刪掉的不會再出現）
@@ -505,22 +622,40 @@ function streakBefore(date){ // 不含今天，往回算的連續天數
   const done = new Set(S.logs.map(l=>l.date)); let n=0, d=new Date(date+"T00:00"); d.setDate(d.getDate()-1);
   while(done.has(dkey(d))){ n++; d.setDate(d.getDate()-1); } return n;
 }
-function calcXp(v, min){
-  const parts=[]; const m = Math.max(min||0, 5);
-  const mult = {light:1, normal:1.2, hard:1.5}[v.int]||1;
-  const base = Math.round(m*10*mult);
-  parts.push([`訓練 ${Math.round(m)} 分（${INT_TXT[v.int]}）`, base]);
-  const today = todayKey();
-  if(!S.logs.some(l=>l.date===today)) parts.push(["今日首次訓練", 50]);
-  const st = streakBefore(today) + 1;
-  if(st>=2){ let b = 10*Math.min(st,7); if(S.cls==="monk") b*=2; parts.push([`連續 ${st} 天${S.cls==="monk"?"（武僧 ×2）":""}`, b]); }
-  if(S.cls==="striker" && v.int==="hard") parts.push(["拳鬥士：高強度加成", Math.round(base*.25)]);
-  if(S.cls==="swift" && m<=25) parts.push(["疾風拳客：短時間加成", Math.round(base*.25)]);
-  if(S.cls==="guard" && m>=30) parts.push(["鐵壁衛士：長時間加成", Math.round(base*.35)]);
-  return {parts, total: parts.reduce((a,p)=>a+p[1],0)};
+const INT_MULT = {light:1, normal:1.2, hard:1.5};
+// 跟分鐘、強度有關的經驗（含職業加成）。修改紀錄時也用這個重算
+function minuteXp(int, min, cls){
+  const m = Math.max(min||0, 5), base = Math.round(m*10*(INT_MULT[int]||1));
+  let bonus=0, label="";
+  if(cls==="striker" && int==="hard"){ bonus=Math.round(base*.25); label="拳鬥士：高強度加成"; }
+  if(cls==="swift" && m<=25){ bonus=Math.round(base*.25); label="疾風拳客：短時間加成"; }
+  if(cls==="guard" && m>=30){ bonus=Math.round(base*.35); label="鐵壁衛士：長時間加成"; }
+  return {m, base, bonus, label, total:base+bonus};
+}
+function weekStart(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
+function weekDays(from){ const s=dkey(from), e=new Date(from); e.setDate(e.getDate()+7); const ek=dkey(e);
+  return new Set(S.logs.filter(l=>l.date>=s && l.date<ek).map(l=>l.date)).size; }
+function calcXp(int, min){
+  const parts=[]; const mx = minuteXp(int, min, S.cls);
+  parts.push([`訓練 ${Math.round(mx.m)} 分（${INT_TXT[int]}）`, mx.base]);
+  if(mx.bonus) parts.push([mx.label, mx.bonus]);
+  const today = todayKey(); let extra=0;
+  if(!S.logs.some(l=>l.date===today)){
+    parts.push(["今日首次訓練", 50]); extra+=50;
+    const st = streakBefore(today) + 1;
+    if(st>=2){ let b = 10*Math.min(st,7); if(S.cls==="monk") b*=2; parts.push([`連續 ${st} 天${S.cls==="monk"?"（武僧 ×2）":""}`, b]); extra+=b; }
+    const goal=S.weekGoal||3, days=weekDays(weekStart(new Date()))+1;
+    if(days===goal){ parts.push([`達成每週目標 ${goal} 天`, 100]); extra+=100; }
+  }
+  return {parts, extra, total: mx.total+extra};
 }
 // 舊紀錄沒有經驗值的，補算基本值
-S.logs.forEach(l=>{ if(l.xp==null){ const v=S.videos.find(x=>x.id===l.id)||{int:"normal"}; l.xp=Math.round(Math.max(l.min||0,5)*10*({light:1,normal:1.2,hard:1.5}[v.int]||1)); } });
+S.logs.forEach(l=>{
+  const v=S.videos.find(x=>x.id===l.id);
+  if(!l.int) l.int = (v&&v.int)||"normal";
+  if(l.xp==null) l.xp=minuteXp(l.int, l.min, null).base;
+  if(l.extra==null) l.extra=Math.max(0, l.xp - minuteXp(l.int, l.min, l.cls||S.cls).total);
+});
 save();
 
 /* ---------- 工具 ---------- */
@@ -569,17 +704,29 @@ function renderHome(){
   let streak=0, d=new Date(); if(!done.has(dkey(d))) d.setDate(d.getDate()-1);
   while(done.has(dkey(d))){ streak++; d.setDate(d.getDate()-1); }
   // 本週（週一起算）
-  const mon=new Date(now); mon.setHours(0,0,0,0); mon.setDate(mon.getDate()-((wd+6)%7));
-  const week = S.logs.filter(l=>new Date(l.date+"T00:00")>=mon).length;
-  const mins = Math.round(S.logs.reduce((a,l)=>a+(l.min||0),0));
-  $("#sStreak").textContent=streak; $("#sWeek").textContent=week; $("#sMin").textContent=mins;
-  $("#sKcal").textContent = Math.round(S.logs.filter(l=>new Date(l.date+"T00:00")>=mon).reduce((a,l)=>a+(l.kcal||0),0));
+  const mon=weekStart(now), mk=dkey(mon);
+  const wl = S.logs.filter(l=>l.date>=mk);
+  const goal=S.weekGoal||3, wd2=weekDays(mon);
+  $("#sWeek").textContent=`${wd2} / ${goal}`;
+  $("#sGoalBar").style.width=Math.min(100,wd2/goal*100)+"%";
+  $("#sWeekLbl").textContent = wd2>=goal ? "本週目標達成 ✓" : "本週目標（天）";
+  $("#sStreak").textContent=streak;
+  $("#sMin").textContent=Math.round(wl.reduce((a,l)=>a+(l.min||0),0));
+  $("#sKcal").textContent=Math.round(wl.reduce((a,l)=>a+(l.kcal||0),0));
+  renderNag();
   // 14 天
   let h=""; for(let i=13;i>=0;i--){ const x=new Date(); x.setDate(x.getDate()-i); const k=dkey(x);
     h+=`<div class="dot ${done.has(k)?"done":""} ${i===0?"today":""}">${x.getDate()}</div>`; }
   $("#dots").innerHTML=h;
   document.querySelectorAll("#moodSeg button").forEach(b=>b.classList.toggle("on",b.dataset.m===S.mood));
   renderRec();
+}
+function renderNag(){
+  const el=$("#nagBox"); if(!el) return;
+  const off = S.nagOff && (Date.now()-new Date(S.nagOff).getTime() < 30*864e5);
+  if(S.cloud && S.cloud.url || S.logs.length<7 || off){ el.innerHTML=""; return; }
+  el.innerHTML=`<div class="card nag"><b>☁️ 記得備份</b><div class="sub" style="margin-top:4px">已經有 ${S.logs.length} 筆紀錄，現在只存在這支手機裡。設定 Google 雲端備份後，換手機也不怕不見。</div>
+    <div class="row" style="margin-top:10px"><button class="primary" onclick="go('set');setTimeout(()=>$('#cloudH').scrollIntoView({behavior:'smooth'}),100)">去設定</button><button class="ghost" onclick="S.nagOff=new Date().toISOString();save();renderNag()">之後再說</button></div></div>`;
 }
 let recId=null;
 function pickRec(exclude){
@@ -588,17 +735,23 @@ function pickRec(exclude){
   if(!daily.length) return null;
   // 還沒做過任何訓練 → 先推教學
   if(!S.logs.length){ const t=S.videos.find(v=>v.type==="tutorial"); if(t && exclude!==t.id) return t; }
-  let want = S.mood==="tired" ? ["light"] : S.mood==="good" ? (weekend?["hard","normal"]:["normal","hard"]) : (weekend?["normal","hard"]:["normal","light"]);
-  let pool = daily.filter(v=>want.includes(v.int));
-  if(!weekend) { const short = pool.filter(v=>!v.min || v.min<=25); if(short.length) pool=short; }
+  const want = S.mood==="tired" ? ["light"] : S.mood==="good" ? (weekend?["hard","normal"]:["normal","hard"]) : (weekend?["normal","hard"]:["normal","light"]);
+  let pool = daily.filter(v=>want.includes(v.int) && v.id!==exclude);
+  // 平日只推確定 25 分鐘內的（長度未知的不推，免得推到 1 小時的）
+  if(!weekend){ const short = pool.filter(v=>v.min && v.min<=25); if(short.length) pool=short; }
+  if(!pool.length) pool=daily.filter(v=>v.id!==exclude);
   if(!pool.length) pool=daily;
-  // 優先最久沒打的
   const last={}; S.logs.forEach(l=>{ last[l.id]=l.date; });
-  pool = pool.filter(v=>v.id!==exclude);
-  if(!pool.length) pool=daily;
-  pool.sort((a,b)=>((b.isNew&&!last[b.id])?1:0)-((a.isNew&&!last[a.id])?1:0) || (last[a.id]||"0").localeCompare(last[b.id]||"0"));
-  const top = pool.slice(0, Math.min(3,pool.length));
-  return top[Math.floor(Math.random()*top.length)];
+  const isFresh = v=>v.isNew && !last[v.id];
+  const fresh = pool.filter(isFresh), rest = pool.filter(v=>!isFresh(v));
+  // 新影片大約每 3 次推 1 次；其他優先推最久沒打的，最愛的稍微加權
+  let src = rest.length ? rest : fresh;
+  if(fresh.length && rest.length && Math.random()<1/3) src = fresh;
+  src = src.slice().sort((a,b)=>(last[a.id]||"0").localeCompare(last[b.id]||"0") || (b.fav?1:0)-(a.fav?1:0));
+  const top = src.slice(0, Math.min(3,src.length));
+  const favTop = top.filter(v=>v.fav);
+  const pickFrom = favTop.length && Math.random()<.5 ? favTop : top;
+  return pickFrom[Math.floor(Math.random()*pickFrom.length)];
 }
 function renderRec(force){
   let v = (!force && recId) ? S.videos.find(x=>x.id===recId) : null;
@@ -612,7 +765,13 @@ function renderRec(force){
 }
 
 /* ---------- 影片庫 ---------- */
-let fType="all", fInt="all", fSrc="all", fLen="all";
+let fType="all", fInt="all", fSrc="all", fLen="all", libQ="";
+const F_OPTS = {
+  src:[["all","全部"],["fav","⭐ 最愛"],["new","🆕 新影片"],["game","健身拳擊"],["coach","教練跟練"],["mine","自己加的"]],
+  type:[["all","全部"],["daily","每日訓練"],["tutorial","動作教學"],["stretch","伸展"]],
+  int:[["all","全部"],["light","輕"],["normal","一般"],["hard","高強度"]],
+  len:[["all","全部"],["s","15 分內"],["m","16–30 分"],["l","30 分以上"],["unk","長度未知"]]
+};
 function lenOk(v){
   if(fLen==="all") return true;
   if(!v.min) return fLen==="unk";
@@ -625,49 +784,177 @@ function chips(el, opts, cur, cb){
   el.innerHTML = opts.map(([k,t])=>`<button class="chip ${k===cur?"on":""}" data-k="${k}">${t}</button>`).join("");
   el.querySelectorAll("button").forEach(b=>b.onclick=()=>cb(b.dataset.k));
 }
+function renderFilters(){
+  chips($("#fSrc"), F_OPTS.src, fSrc, k=>{fSrc=k;renderFilters();renderLib();});
+  chips($("#fType"), F_OPTS.type, fType, k=>{fType=k;renderFilters();renderLib();});
+  chips($("#fInt"), F_OPTS.int, fInt, k=>{fInt=k;renderFilters();renderLib();});
+  chips($("#fLen"), F_OPTS.len, fLen, k=>{fLen=k;renderFilters();renderLib();});
+}
+function srcMatch(v){
+  if(fSrc==="all") return true;
+  if(fSrc==="new") return v.isNew;
+  if(fSrc==="fav") return v.fav;
+  return v.src===fSrc;
+}
 function renderLib(){
-  chips($("#fSrc"), [["all","全部來源"],["new","🆕 新影片"],["game","健身拳擊"],["coach","教練跟練"],["mine","自己加的"]], fSrc, k=>{fSrc=k;renderLib();});
-  chips($("#fType"), [["all","所有類型"],["daily","每日訓練"],["tutorial","動作教學"],["stretch","伸展"]], fType, k=>{fType=k;renderLib();});
-  chips($("#fInt"), [["all","所有強度"],["light","輕"],["normal","一般"],["hard","高強度"]], fInt, k=>{fInt=k;renderLib();});
-  chips($("#fLen"), [["all","所有長度"],["s","15 分內"],["m","16–30 分"],["l","30 分以上"],["unk","長度未知"]], fLen, k=>{fLen=k;renderLib();});
+  // 目前套用的篩選，用小標籤顯示，點一下就取消
+  const act=[]; const lbl=(g,k)=>F_OPTS[g].find(x=>x[0]===k)[1];
+  if(fSrc!=="all") act.push(["src",lbl("src",fSrc)]);
+  if(fType!=="all") act.push(["type",lbl("type",fType)]);
+  if(fInt!=="all") act.push(["int",lbl("int",fInt)]);
+  if(fLen!=="all") act.push(["len",lbl("len",fLen)]);
+  $("#fCount").innerHTML = act.length?`<span class="fbadge">${act.length}</span>`:"";
+  $("#activeF").innerHTML = act.map(([g,t])=>`<button data-g="${g}">${t} ✕</button>`).join("");
+  $("#activeF").querySelectorAll("button").forEach(b=>b.onclick=()=>{ ({src:()=>fSrc="all",type:()=>fType="all",int:()=>fInt="all",len:()=>fLen="all"})[b.dataset.g](); renderLib(); });
   const cnt={}; S.logs.forEach(l=>cnt[l.id]=(cnt[l.id]||0)+1);
-  const list = S.videos.filter(v=>(fSrc==="all"||(fSrc==="new"?v.isNew:v.src===fSrc))&&(fType==="all"||v.type===fType)&&(fInt==="all"||v.int===fInt)&&lenOk(v));
-  list.sort((a,b)=>(b.isNew?1:0)-(a.isNew?1:0) || (a.isNew&&b.isNew ? (b.published||"").localeCompare(a.published||"") : 0));
-  $("#libCount").textContent = (S.newUpdated?`新影片清單更新於 ${S.newUpdated}・`:"") + `共 ${list.length} 部${list.length!==S.videos.length?`（全部 ${S.videos.length} 部）`:""}・長度未知的影片播放一次就會自動補上`;
+  const q=libQ.trim().toLowerCase();
+  const list = S.videos.filter(v=>srcMatch(v)&&(fType==="all"||v.type===fType)&&(fInt==="all"||v.int===fInt)&&lenOk(v)
+    && (!q || [v.title,v.orig,v.channel].some(x=>x && String(x).toLowerCase().includes(q))));
+  // 排序：最愛 → 自己加的／預設 → 新影片（依上傳日）
+  list.sort((a,b)=>(b.fav?1:0)-(a.fav?1:0) || (a.isNew?1:0)-(b.isNew?1:0) || (a.isNew&&b.isNew ? (b.published||"").localeCompare(a.published||"") : 0));
+  $("#libCount").textContent = `共 ${list.length} 部${list.length!==S.videos.length?`（全部 ${S.videos.length} 部）`:""}・長按影片可以改資料、刪除` + (S.newUpdated?`・新影片更新於 ${S.newUpdated.slice(5)}`:"");
   $("#libList").innerHTML = list.length ? list.map(v=>`
     <div class="item" data-id="${v.id}">
       <div class="thumb" style="width:110px;background-image:url(${thumb(v.id)})">${v.min?`<span class="len">${v.min} 分</span>`:""}</div>
       <div class="meta"><div class="t">${esc(v.title)}</div>
         <div class="tags"><span class="tag ${v.int}">${INT_TXT[v.int]}</span><span class="tag">${TYPE_TXT[v.type]||""}</span><span class="tag">${SRC_TXT[v.src]||""}</span>${cnt[v.id]?`<span class="tag done">打過 ${cnt[v.id]} 次</span>`:""}${v.noEmbed?`<span class="tag hard">需到 YouTube 看</span>`:""}${v.isNew&&!cnt[v.id]?`<span class="tag" style="background:var(--accent);color:#fff">NEW</span>`:""}${v.published?`<span class="tag">${v.published.slice(5).replace("-","/")} 上傳</span>`:""}</div></div>
-      <button class="ghost" data-del="${v.id}" title="刪除" style="padding:6px 9px">🗑</button>
+      <button class="fav ${v.fav?"on":""}" data-fav="${v.id}" title="最愛">${v.fav?"★":"☆"}</button>
     </div>`).join("") : '<div class="empty">沒有符合條件的影片</div>';
-  $("#libList").querySelectorAll(".item").forEach(it=>it.onclick=e=>{
-    const del = e.target.closest("[data-del]");
-    if(del){ e.stopPropagation(); askDelete(del.dataset.del, del); return; }
-    openPlayer(it.dataset.id);
+  $("#libList").querySelectorAll(".item").forEach(it=>{
+    let timer=null, long=false, sx=0, sy=0;
+    const cancel=()=>{ clearTimeout(timer); it.classList.remove("pressing"); };
+    it.addEventListener("touchstart",e=>{ if(e.target.closest("[data-fav]")) return; long=false; sx=e.touches[0].clientX; sy=e.touches[0].clientY; it.classList.add("pressing");
+      timer=setTimeout(()=>{ long=true; it.classList.remove("pressing"); if(navigator.vibrate) navigator.vibrate(15); openVidModal(it.dataset.id); },500); },{passive:true});
+    it.addEventListener("touchmove",e=>{ const t=e.touches[0]; if(Math.abs(t.clientX-sx)>8||Math.abs(t.clientY-sy)>8) cancel(); },{passive:true});
+    it.addEventListener("touchend",cancel); it.addEventListener("touchcancel",cancel);
+    it.addEventListener("contextmenu",e=>{ e.preventDefault(); if(!long){ long=true; openVidModal(it.dataset.id); } });
+    it.onclick=e=>{
+      if(long){ long=false; return; }
+      const f=e.target.closest("[data-fav]");
+      if(f){ e.stopPropagation(); toggleFav(f.dataset.fav); return; }
+      openPlayer(it.dataset.id);
+    };
   });
 }
-function askDelete(id, btn){
-  if(btn.dataset.confirm){ S.videos=S.videos.filter(v=>v.id!==id); if(!S.deleted.includes(id)) S.deleted.push(id); save(); renderLib(); toast("已刪除"); return; }
-  btn.dataset.confirm="1"; btn.textContent="確定刪除？"; btn.style.color="var(--accent)";
-  setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.confirm; btn.textContent="🗑"; btn.style.color=""; } },3000);
+function toggleFav(id){ const v=S.videos.find(x=>x.id===id); if(!v) return; v.fav=!v.fav; save(); cloudDirty=true; toast(v.fav?"已加入最愛 ⭐":"已從最愛移除"); renderLib(); }
+$("#libQ").addEventListener("input",e=>{ libQ=e.target.value; renderLib(); });
+$("#filterBtn").onclick=()=>{ renderFilters(); openModal("#filterModal"); };
+$("#fReset").onclick=()=>{ fSrc=fType=fInt=fLen="all"; renderFilters(); renderLib(); };
+
+// 影片選項（長按）
+let vmId=null, vmInt="normal";
+function segPick(el, val, attr){ el.querySelectorAll("button").forEach(b=>b.classList.toggle("on", b.dataset[attr]===val)); }
+function openVidModal(id){
+  const v=S.videos.find(x=>x.id===id); if(!v) return; vmId=id; vmInt=v.int||"normal";
+  $("#vmOrig").textContent = (v.orig && v.orig!==v.title ? "原標題："+v.orig : "") + (v.channel?`${v.orig&&v.orig!==v.title?"・":""}頻道：${v.channel}`:"");
+  $("#vmTitle").value=v.title; $("#vmType").value=v.type||"daily"; $("#vmMin").value=v.min||"";
+  segPick($("#vmInt"), vmInt, "i");
+  $("#vmFav").textContent = v.fav ? "★ 從最愛移除" : "☆ 加入最愛";
+  const d=$("#vmDel"); delete d.dataset.c; d.textContent="刪除這部影片";
+  openModal("#vidModal");
 }
+$("#vmInt").querySelectorAll("button").forEach(b=>b.onclick=()=>{ vmInt=b.dataset.i; segPick($("#vmInt"), vmInt, "i"); });
+$("#vmSave").onclick=()=>{
+  const v=S.videos.find(x=>x.id===vmId); if(!v) return;
+  const m=parseInt($("#vmMin").value,10);
+  Object.assign(v,{title:$("#vmTitle").value.trim()||v.title, type:$("#vmType").value, int:vmInt, min:m>0?m:null, edited:true});
+  save(); cloudDirty=true; $("#vidModal").classList.remove("on"); renderLib(); toast("已儲存");
+};
+$("#vmFav").onclick=()=>{ toggleFav(vmId); $("#vidModal").classList.remove("on"); };
+$("#vmPlay").onclick=()=>{ $("#vidModal").classList.remove("on"); openPlayer(vmId); };
+$("#vmDel").onclick=function(){
+  if(!this.dataset.c){ this.dataset.c=1; this.textContent="再按一次確定刪除"; return; }
+  S.videos=S.videos.filter(v=>v.id!==vmId); if(!S.deleted.includes(vmId)) S.deleted.push(vmId);
+  save(); cloudDirty=true; $("#vidModal").classList.remove("on"); renderLib(); toast("已刪除");
+};
 
 /* ---------- 紀錄 ---------- */
+let logWeeks=8;
 function renderHist(){
-  try{ renderHkCard(); }catch(e){}
-  try{ renderCloud(); }catch(e){}
   const c=CLASSES[S.cls];
   if(c){
     $("#clsInfo").innerHTML = `<div class="row"><div style="width:64px;height:68px">${charSVG(S.cls,S.tier)}</div>
       <div><b>${tierName()}</b>　<span class="sub">${c.name}系・Lv ${lvInfo(totalXp()).lv}・總經驗 ${totalXp()}</span><div class="sub" style="color:var(--accent2)">${c.bonus}</div></div></div>
       <div class="tiers">${c.tiers.map((t,i)=>`<div class="tierfig ${i>S.tier?"lock":""} ${i===S.tier?"cur":""}"><div class="f">${charSVG(S.cls,i)}</div>${i>S.tier?"？？？":t}<br>Lv ${TIER_LV[i]}</div>`).join("")}</div>`;
   }
-  if(!S.logs.length){ $("#logList").innerHTML='<div class="empty">還沒有紀錄，打完一部影片按「完成」就會出現在這裡</div>'; return; }
-  $("#logList").innerHTML = S.logs.slice().reverse().slice(0,60).map(l=>{
+  // 總覽
+  const now=new Date(), mk=dkey(weekStart(now)), m1=dkey(new Date(now.getFullYear(),now.getMonth(),1));
+  const agg = arr=>({n:arr.length, min:Math.round(arr.reduce((a,l)=>a+(l.min||0),0)), kcal:Math.round(arr.reduce((a,l)=>a+(l.kcal||0),0))});
+  const w=agg(S.logs.filter(l=>l.date>=mk)), m=agg(S.logs.filter(l=>l.date>=m1)), all=agg(S.logs);
+  $("#sumGrid").innerHTML = [["本週",w],["本月",m],["全部",all]].map(([t,x])=>`<div><span>${t}</span><b>${x.n} 次</b><span>${x.min} 分${x.kcal?`・${x.kcal} kcal`:""}</span></div>`).join("");
+  // 12 週長條圖
+  const goal=S.weekGoal||3; let bars="", max=Math.max(goal,1);
+  const weeks=[]; for(let i=11;i>=0;i--){ const st=weekStart(now); st.setDate(st.getDate()-7*i); const n=weekDays(st); weeks.push([st,n]); max=Math.max(max,n); }
+  weeks.forEach(([st,n],i)=>{ bars+=`<div class="b ${n>=goal?"hit":""} ${i===11?"cur":""}"><em>${n||""}</em><i style="height:${Math.max(3,n/max*80)}px"></i>${st.getMonth()+1}/${st.getDate()}</div>`; });
+  $("#bars").innerHTML=bars; $("#barsGoal").textContent=`目標 ${goal} 天・綠色＝達成`;
+  // 紀錄列表（依週分組）
+  if(!S.logs.length){ $("#logList").innerHTML='<div class="empty">還沒有紀錄，打完一部影片按「完成」就會出現在這裡</div>'; $("#logMore").style.display="none"; return; }
+  const idx = S.logs.map((l,i)=>i).sort((a,b)=>S.logs[b].date.localeCompare(S.logs[a].date) || b-a);
+  const cutoff=weekStart(now); cutoff.setDate(cutoff.getDate()-7*(logWeeks-1)); const ck=dkey(cutoff);
+  let h="", curW="";
+  idx.forEach(i=>{ const l=S.logs[i]; if(l.date<ck) return;
+    const wk=dkey(weekStart(new Date(l.date+"T00:00")));
+    if(wk!==curW){ curW=wk; const st=new Date(wk+"T00:00"), en=new Date(st); en.setDate(en.getDate()+6);
+      const wl=S.logs.filter(x=>x.date>=wk && x.date<=dkey(en));
+      h+=`<div class="wkhead"><span>${wk===mk?"本週":`${st.getMonth()+1}/${st.getDate()}–${en.getMonth()+1}/${en.getDate()}`}</span><span>${weekDays(st)} 天・${Math.round(wl.reduce((a,x)=>a+(x.min||0),0))} 分</span></div>`; }
     const v=S.videos.find(x=>x.id===l.id);
-    return `<div><span>${l.date.slice(5).replace("-","/")}　${esc(v?v.title:l.title||"（已刪除的影片）")}</span><span class="sub" style="white-space:nowrap;margin-left:8px">${l.min?Math.round(l.min)+" 分・":""}${l.kcal?`${l.kcalSrc==="watch"?"⌚":""}${l.kcal} kcal・`:""}+${l.xp||0}</span></div>`;
-  }).join("");
+    h+=`<div class="logrow" data-i="${i}"><span>${l.date.slice(5).replace("-","/")}　${esc(v?v.title:l.title||"（已刪除的影片）")}</span><span class="sub" style="white-space:nowrap;margin-left:8px">${l.min?Math.round(l.min)+" 分・":""}${l.kcal?`${l.kcalSrc==="watch"?"⌚":""}${l.kcal} kcal・`:""}+${l.xp||0}</span></div>`;
+  });
+  $("#logList").innerHTML=h||'<div class="empty">這段時間沒有紀錄</div>';
+  $("#logList").querySelectorAll(".logrow").forEach(r=>r.onclick=()=>openLogModal(+r.dataset.i));
+  $("#logMore").style.display = S.logs.some(l=>l.date<ck) ? "inline-flex" : "none";
+}
+$("#logMore").onclick=()=>{ logWeeks+=8; renderHist(); };
+
+// 修改／刪除紀錄
+let lmI=null, lmInt="normal";
+function lmPreview(){
+  const l=S.logs[lmI]; if(!l) return;
+  const mins=+$("#lmMin").value||0;
+  $("#lmXp").textContent=`經驗值：${l.xp||0} → ${minuteXp(lmInt, mins, l.cls||S.cls).total + (l.extra||0)}`;
+}
+function openLogModal(i){
+  const l=S.logs[i]; if(!l) return; lmI=i;
+  const v=S.videos.find(x=>x.id===l.id);
+  lmInt=l.int||(v&&v.int)||"normal";
+  $("#lmTitle").textContent=v?v.title:l.title||"（已刪除的影片）";
+  $("#lmDate").value=l.date; $("#lmMin").value=l.min||""; $("#lmKcal").value=l.kcal||"";
+  segPick($("#lmInt"), lmInt, "i"); lmPreview();
+  const d=$("#lmDel"); delete d.dataset.c; d.textContent="刪除這筆紀錄";
+  openModal("#logModal");
+}
+$("#lmInt").querySelectorAll("button").forEach(b=>b.onclick=()=>{ lmInt=b.dataset.i; segPick($("#lmInt"), lmInt, "i"); lmPreview(); });
+$("#lmMin").addEventListener("input",lmPreview);
+$("#lmSave").onclick=()=>{
+  const l=S.logs[lmI]; if(!l) return;
+  const mins=parseInt($("#lmMin").value,10), date=$("#lmDate").value, kc=parseInt($("#lmKcal").value,10);
+  if(!(mins>0 && mins<=300)){ toast("分鐘請輸入 1–300"); return; }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || date>todayKey()){ toast("日期不對"); return; }
+  const before=lvInfo(totalXp()).lv;
+  l.min=mins; l.date=date; l.int=lmInt;
+  l.xp = minuteXp(lmInt, mins, l.cls||S.cls).total + (l.extra||0);
+  if(kc>0){ if(kc!==l.kcal){ l.kcal=kc; l.kcalSrc="manual"; } } else { l.kcal=0; l.kcalSrc=""; }
+  save(); cloudDirty=true; $("#logModal").classList.remove("on");
+  const after=lvInfo(totalXp()).lv;
+  toast(after!==before?`已修改・等級 Lv ${before} → ${after}`:"已修改"); renderHist();
+};
+$("#lmDel").onclick=function(){
+  if(!this.dataset.c){ this.dataset.c=1; this.textContent="會扣回這筆的經驗，再按一次確定"; return; }
+  const before=lvInfo(totalXp()).lv;
+  S.logs.splice(lmI,1); save(); cloudDirty=true; $("#logModal").classList.remove("on");
+  const after=lvInfo(totalXp()).lv;
+  toast(after!==before?`已刪除・等級 Lv ${before} → ${after}`:"已刪除"); renderHist();
+};
+
+/* ---------- 設定頁 ---------- */
+function renderSet(){
+  try{ renderHkCard(); }catch(e){}
+  try{ renderCloud(); }catch(e){}
+  const c=CLASSES[S.cls];
+  $("#setCls").innerHTML = c ? `目前：<b style="color:var(--text)">${esc(S.name||"拳手")}</b>・${tierName()}（${c.name}系）` : "還沒選職業";
+  const g=S.weekGoal||3;
+  $("#goalSeg").innerHTML=[1,2,3,4,5,6,7].map(n=>`<button data-g="${n}" class="${n===g?"on":""}">${n} 天</button>`).join("");
+  $("#goalSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>{ S.weekGoal=+b.dataset.g; save(); cloudDirty=true; renderSet(); toast(`每週目標改為 ${S.weekGoal} 天`); });
 }
 
 /* ---------- 導覽 ---------- */
@@ -678,7 +965,7 @@ function go(v){
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
   $("#tabbar").classList.remove("mini"); requestAnimationFrame(movePill);
   document.querySelector("nav").style.display="flex";
-  ({home:renderHome, lib:renderLib, hist:renderHist})[v]();
+  ({home:renderHome, lib:renderLib, hist:renderHist, set:renderSet})[v]();
   scrollTo(0,0);
 }
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
@@ -744,7 +1031,7 @@ function createPlayer(id){
         if(e.data===YT.PlayerState.PLAYING){ keepAwake(true); clearInterval(posTimer);
           posTimer=setInterval(()=>{ try{ S.pos[id]=player.getCurrentTime(); save(); }catch(_){} },5000); }
         else { clearInterval(posTimer); try{ S.pos[id]=player.getCurrentTime(); save(); }catch(_){} }
-        if(e.data===YT.PlayerState.ENDED){ keepAwake(false); delete S.pos[id]; save(); toast("打完了！記得按「完成」"); }
+        if(e.data===YT.PlayerState.ENDED){ keepAwake(false); delete S.pos[id]; save(); if(!$("#doneModal").classList.contains("on")) openDone(true); }
       },
       onError:e=>{ if([100,101,150,153].includes(e.data)){ $("#err").classList.add("show"); const bv=S.videos.find(x=>x.id===id); if(bv && e.data!==153){ bv.noEmbed=true; save(); } } else toast("播放發生錯誤（代碼 "+e.data+"）"); }
     }
@@ -770,16 +1057,38 @@ document.querySelectorAll("#spdSeg button").forEach(b=>b.onclick=()=>{
   try{ player && player.setPlaybackRate(S.speed); }catch(e){}
 });
 $("#mirBtn").onclick=()=>{ S.mirror=!S.mirror; save(); $("#vbox").classList.toggle("mirror",S.mirror); $("#mirBtn").textContent="左右翻轉："+(S.mirror?"開":"關"); };
-$("#doneBtn").onclick=()=>{
+// 按「完成」→ 先確認分鐘與強度，再結算
+let dmInt="normal";
+function openDone(ended){
+  const v=S.videos.find(x=>x.id===curId); if(!v) return;
+  let played=0; try{ played=player && player.getCurrentTime ? player.getCurrentTime() : 0; }catch(e){}
+  const elapsed = sessionStart && sessionVid===curId ? (Date.now()-sessionStart.getTime())/60000 : 0;
+  // 預設值：影片長度 → 播放進度 → 從打開到現在的時間
+  let guess = v.min || 0, hint="";
+  if(v.min && played>60 && played/60 < v.min*0.9 && !ended){ guess=Math.round(played/60); hint=`影片 ${v.min} 分，播放到 ${Math.round(played/60)} 分`; }
+  else if(v.min) hint=`影片長度 ${v.min} 分`;
+  else if(played>60){ guess=Math.round(played/60); hint=`播放到 ${guess} 分（影片長度未知）`; }
+  else if(elapsed>=3){ guess=Math.round(elapsed); hint=`從打開影片到現在約 ${guess} 分，請依實際狀況調整`; }
+  else hint="長度未知，請填實際打了幾分鐘";
+  $("#dmTitle").textContent=v.title; $("#dmMin").value=guess||""; $("#dmHint").textContent=hint;
+  dmInt=v.int||"normal"; segPick($("#dmInt"), dmInt, "i");
+  $("#dmGo").disabled=false;
+  openModal("#doneModal");
+  if(!guess) setTimeout(()=>$("#dmMin").focus(),300);
+}
+$("#dmInt").querySelectorAll("button").forEach(b=>b.onclick=()=>{ dmInt=b.dataset.i; segPick($("#dmInt"), dmInt, "i"); });
+$("#doneBtn").onclick=()=>openDone(false);
+$("#dmGo").onclick=()=>{
+  const min=parseInt($("#dmMin").value,10);
+  if(!(min>0 && min<=300)){ toast("請填實際打了幾分鐘（1–300）"); $("#dmMin").focus(); return; }
+  $("#dmGo").disabled=true; $("#doneModal").classList.remove("on");
   const v=S.videos.find(x=>x.id===curId);
-  let min = v && v.min ? v.min : 0;
-  try{ const t=player && player.getCurrentTime(); if(t && t>60 && (!min || t/60 < min*0.9)) min = t/60; }catch(e){}
-  const vv = v || {int:"normal"};
-  const g = calcXp(vv, min);
+  if(v){ v.int=dmInt; if(!v.min) v.min=min; }
+  const g = calcXp(dmInt, min);
   const before = lvInfo(totalXp());
-  const end=new Date(), startT = sessionStart && sessionVid===curId ? sessionStart : new Date(end - Math.max(min,1)*60000);
-  const est = estKcal(vv.int, min);
-  S.logs.push({date:todayKey(), id:curId, title:v?v.title:"", min:Math.round(min), xp:g.total,
+  const end=new Date(), startT = sessionStart && sessionVid===curId ? sessionStart : new Date(end - min*60000);
+  const est = estKcal(dmInt, min);
+  S.logs.push({date:todayKey(), id:curId, title:v?v.title:"", min, int:dmInt, cls:S.cls, xp:g.total, extra:g.extra,
     start:startT.toISOString(), end:end.toISOString(), kcal:est, kcalSrc:est?"est":""});
   sessionStart=null; sessionVid=null;
   delete S.pos[curId]; save();
@@ -803,8 +1112,8 @@ function showResult(g, before, after){
     ${up?`<div class="oldnew"><s>Lv ${before.lv}</s> → <b>Lv ${after.lv}</b></div>`:`<div class="sub" style="margin-top:6px">辛苦了 💪</div>`}
     <div class="gain">${rows}<div class="sum" style="animation-delay:${.15+g.parts.length*.12}s"><span>獲得經驗</span><span>+${g.total} EXP</span></div></div>
     <div id="hkPanel">${healthPanel(S.logs.length-1)}</div>
-    ${adv?`<button class="adv" data-fxclose onclick="setTimeout(advance,250)">✦ 可以轉職了！立刻轉職</button>`:""}
-    <button class="${adv?"ghost":"primary"} bigdone" style="margin-top:8px" data-fxclose>${adv?"等一下再說":"好"}</button>`, up);
+    ${adv?`<button class="adv bigdone" data-fxclose onclick="setTimeout(advance,250)">✦ 等級到了，前往轉職！</button>`:
+      `<button class="primary bigdone" style="margin-top:8px" data-fxclose>好</button>`}`, up);
 }
 
 /* ---------- 健康 / 熱量 ---------- */
@@ -826,16 +1135,27 @@ function healthPanel(i){
   if(S.health.mode==="watch"){
     btns = `<div class="row" style="justify-content:center;margin-top:8px">
       <button class="primary" onclick="hkRead(${i})">⌚ 讀取手錶熱量</button>
-      <button onclick="hkPaste(${i})">📋 貼上讀取結果</button></div>
+      <button id="hkPasteBtn" onclick="hkPaste(${i})">📋 貼上讀取結果</button></div>
       <div class="sub" style="margin-top:6px">先按「讀取」執行捷徑，回到這裡再按「貼上」。<br>手錶資料同步可能要等一兩分鐘。</div>`;
-  } else {
-    btns = `<div class="row" style="justify-content:center;margin-top:8px">
-      ${l.kcal?`<button class="primary" onclick="hkWrite(${i})">❤️ 寫入健康 App</button>`:`<button onclick="go('hist');fxClose()">先設定體重</button>`}</div>`;
+  } else if(l.kcal){
+    btns = `<div class="row" style="justify-content:center;margin-top:8px"><button class="primary" onclick="hkWrite(${i})">❤️ 寫入健康 App</button></div>`;
+  }
+  if(!l.kcal && !S.health.weight){
+    btns += `<div class="sub" style="margin-top:10px">${S.health.mode==="watch"?"手錶讀不到時，":""}填體重就能先用公式估算：</div>
+      <div class="row" style="justify-content:center;margin-top:6px;gap:6px">
+      <input id="hkW${i}" type="number" inputmode="decimal" placeholder="體重 kg" style="width:120px;padding:7px 10px">
+      <button onclick="hkSetWeight(${i})">估算</button></div>`;
   }
   btns += `<div class="row" style="justify-content:center;margin-top:6px;gap:6px">
     <input id="hkMan${i}" type="number" inputmode="numeric" placeholder="手動輸入 kcal" style="width:140px;padding:7px 10px">
     <button onclick="hkManual(${i})">儲存</button></div>`;
   return `<div class="gain hk" style="text-align:center"><div class="sub" style="display:block">消耗熱量${src?`（${src}）`:""}</div><div style="display:block">${kc}</div>${btns}</div>`;
+}
+function hkSetWeight(i){
+  const w=+($("#hkW"+i)||{}).value; if(!(w>=30&&w<=250)){ toast("體重請輸入 30–250"); return; }
+  S.health.weight=Math.round(w*10)/10; const l=S.logs[i];
+  if(l && !l.kcal){ const k=estKcal(l.int||"normal", l.min); if(k){ l.kcal=k; l.kcalSrc="est"; } }
+  save(); cloudDirty=true; toast(`體重已設為 ${S.health.weight} 公斤`); hkRefresh(i);
 }
 function hkRefresh(i){ const el=$("#hkPanel"); if(el && $("#fx").classList.contains("on")) el.innerHTML=healthPanel(i); renderHome(); try{renderHkCard();}catch(e){} }
 function hkRead(i){
@@ -845,7 +1165,8 @@ function hkRead(i){
   hkPending=i; runShortcut(SC_READ, `${st}|${en}`);
 }
 let hkPending=null;
-document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && hkPending!=null){ setTimeout(()=>toast("讀好了嗎？按「📋 貼上讀取結果」"),600); hkPending=null; } });
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && hkPending!=null){ hkPending=null;
+  setTimeout(()=>{ const b=$("#hkPasteBtn"); if(b){ b.classList.add("attn","primary"); b.scrollIntoView({block:"center",behavior:"smooth"}); } toast("讀好了嗎？按「📋 貼上讀取結果」"); },500); } });
 async function hkPaste(i){
   let t="";
   try{ t = await navigator.clipboard.readText(); }catch(e){ toast("無法讀取剪貼簿，請用手動輸入"); return; }
@@ -886,7 +1207,8 @@ $("#hkWeight").addEventListener("change",()=>{
 document.querySelectorAll("#hkMode button").forEach(b=>b.onclick=()=>{ if(!S.health) S.health={}; S.health.mode=b.dataset.m; save(); renderHkCard(); });
 $("#hkLastBtn").onclick=()=>{
   if(!S.logs.length){ toast("還沒有任何紀錄"); return; }
-  const i=S.logs.length-1; fxOpen(`<div class="big" style="font-size:26px">補登熱量</div><div class="sub" style="margin-top:6px">${esc(S.logs[i].title||"")}・${S.logs[i].date}</div><div id="hkPanel">${healthPanel(i)}</div><button class="primary bigdone" style="margin-top:8px" data-fxclose>關閉</button>`, false);
+  let i=0; S.logs.forEach((l,j)=>{ if(l.date>=S.logs[i].date) i=j; });
+  fxOpen(`<div class="big" style="font-size:26px">補登熱量</div><div class="sub" style="margin-top:6px">${esc(S.logs[i].title||"")}・${S.logs[i].date}</div><div id="hkPanel">${healthPanel(i)}</div><button class="primary bigdone" style="margin-top:8px" data-fxclose>關閉</button>`, false);
 };
 
 /* ---------- 轉職 ---------- */
@@ -901,7 +1223,7 @@ function advance(){
     <div class="oldnew"><s>${old}</s> → <b>${tierName()}</b></div>
     <div class="stars" style="font-size:20px">${"★".repeat(S.tier+1)}${"☆".repeat(TIER_LV.length-1-S.tier)}</div>
     <div class="sub" style="margin-top:10px">${fin?"你已經走到這條路的盡頭。拳的道路沒有終點，繼續打下去吧。":`下一次轉職：Lv ${TIER_LV[S.tier+1]}「${tierName(S.cls,S.tier+1)}」`}</div>
-    <button class="primary bigdone" style="margin-top:18px" data-fxclose>太好了</button>`, true);
+    ${canAdvance(lv)?`<button class="adv bigdone" style="margin-top:18px" data-fxclose onclick="setTimeout(advance,250)">✦ 還可以再轉職！繼續</button>`:`<button class="primary bigdone" style="margin-top:18px" data-fxclose>太好了</button>`}`, true);
   renderHome();
 }
 
@@ -964,17 +1286,18 @@ $("#aSave").onclick=()=>{
 let bkMode="exp";
 $("#expBtn").onclick=async()=>{
   bkMode="exp"; $("#bkTitle").textContent="備份資料"; $("#bkHint").textContent="已嘗試複製到剪貼簿，也可以自己全選複製，貼到記事本保存。";
-  $("#bkText").value=JSON.stringify({videos:S.videos,logs:S.logs}); $("#bkGo").textContent="關閉"; openModal("#bkModal");
+  $("#bkText").value=JSON.stringify(backupData()); $("#bkGo").textContent="關閉"; openModal("#bkModal");
   try{ await navigator.clipboard.writeText($("#bkText").value); toast("已複製"); }catch(e){ $("#bkText").select(); }
 };
 $("#impBtn").onclick=()=>{
-  bkMode="imp"; $("#bkTitle").textContent="貼上還原"; $("#bkHint").textContent="貼上之前備份的內容，會覆蓋目前的影片庫和紀錄。";
+  bkMode="imp"; $("#bkTitle").textContent="貼上還原"; $("#bkHint").textContent="貼上之前備份的內容，會覆蓋目前的紀錄、影片庫和職業進度（舊版備份只有紀錄和影片庫）。";
   $("#bkText").value=""; $("#bkGo").textContent="還原"; openModal("#bkModal");
 };
 $("#bkGo").onclick=()=>{
   if(bkMode==="imp"){
     try{ const d=JSON.parse($("#bkText").value); if(!Array.isArray(d.videos)||!Array.isArray(d.logs)) throw 0;
-      S.videos=d.videos; S.logs=d.logs; save(); toast("還原完成"); renderHist(); }
+      const cloud=S.cloud; delete d.exportedAt; S={...S, ...d, cloud, pos:S.pos||{}}; if(!Array.isArray(S.deleted)) S.deleted=[];
+      save(); toast("還原完成"); recId=null; go(curView); }
     catch(e){ toast("格式不對，還原失敗"); return; }
   }
   $("#bkModal").classList.remove("on");
@@ -1046,7 +1369,7 @@ $("#cloudLoad").onclick=async function(){
     const j=await cloudCall("load"); const d=j.data;
     if(!d || !Array.isArray(d.logs) || !Array.isArray(d.videos)) throw new Error("備份內容格式不對");
     const cloud=S.cloud; S={...S, ...d, cloud, pos:S.pos||{}}; save();
-    toast(`已還原 ${fmtTime(j.saved)} 的備份`); recId=null; renderHist(); renderHome();
+    toast(`已還原 ${fmtTime(j.saved)} 的備份`); recId=null; go(curView);
   }catch(e){ toast("還原失敗："+e.message); }
   this.textContent="從雲端還原";
 };
@@ -1060,7 +1383,15 @@ async function syncNewVideos(){
     const r = await fetch("videos-new.json?t="+Date.now(), {cache:"no-store"});
     if(!r.ok) return;
     const d = await r.json(); if(!Array.isArray(d.videos)) return;
+    { const seen=new Set(); S.videos=S.videos.filter(v=>v&&v.id&&!seen.has(v.id)&&seen.add(v.id)); }
     const have = new Set(S.videos.map(v=>v.id)); let n=0;
+    const remote = Object.fromEntries(d.videos.filter(v=>v&&v.id).map(v=>[v.id,v]));
+    const played = new Set(S.logs.map(l=>l.id));
+    // 自動加入的影片（有 added 欄位）：清單裡已經沒有、沒打過、沒收藏、沒改過的就拿掉，避免越積越多
+    S.videos = S.videos.filter(v=> !v.added || remote[v.id] || played.has(v.id) || v.fav || v.edited || v.src==="mine");
+    // 還在清單裡的：更新整理過的標題、長度、類型（自己改過的不動）
+    S.videos.forEach(v=>{ const r=remote[v.id]; if(!r || !v.added || v.edited) return;
+      v.title=r.title; if(r.orig) v.orig=r.orig; if(r.type) v.type=r.type; if(r.min && !v.min) v.min=r.min; v.channel=r.channel||v.channel; });
     d.videos.forEach(v=>{ if(v && v.id && !have.has(v.id) && !S.deleted.includes(v.id)){ S.videos.push({...v, isNew:true}); n++; } });
     // 超過 14 天的新影片就不再標 NEW
     const cut = new Date(); cut.setDate(cut.getDate()-14); const ck = dkey(cut);
@@ -1073,24 +1404,43 @@ async function syncNewVideos(){
 renderHome();
 requestAnimationFrame(movePill);
 setTimeout(syncNewVideos, 2600);
-playSplash(()=>{ if(!S.cls) openClassPick("new"); });
+// 進場動畫一天只播一次（自動更新重新整理時也不播）
+(function(){
+  const after=()=>{ if(!S.cls) openClassPick("new"); };
+  let skip=false; try{ skip = sessionStorage.getItem("boxing.noSplash")==="1"; sessionStorage.removeItem("boxing.noSplash"); }catch(e){}
+  if(skip || (S.splashDay===todayKey() && S.cls)){ $("#splash").classList.add("hide"); after(); }
+  else { S.splashDay=todayKey(); save(); playSplash(after); }
+})();
 
 /* ---------- PWA ---------- */
-const APP_VERSION = "2026.11.11-10";
+const APP_VERSION = "2026.11.13-1";
 if("serviceWorker" in navigator && location.protocol==="https:"){
   navigator.serviceWorker.register("sw.js", {updateViaCache:"none"}).then(reg=>{
     // 每次回到 App 都檢查有沒有新版
     document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") reg.update().catch(()=>{}); });
   }).catch(()=>{});
-  let reloaded=false;
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(reloaded) return; reloaded=true; location.reload(); });
+  navigator.serviceWorker.addEventListener("controllerchange",()=>safeReload());
 }
+// 有新版時重新整理；正在看影片、結算、填表單時先不要，等回到一般畫面再更新
+let reloadWanted=false, reloading=false;
+function appBusy(){
+  return $("#playerView").style.display==="block" || $("#fx").classList.contains("on") || $("#classPick").classList.contains("on")
+    || !!document.querySelector(".modal.on") || hkPending!=null;
+}
+function safeReload(){
+  if(reloading) return; reloadWanted=true;
+  if(appBusy()) return;
+  reloading=true; toast("有新版本，更新中…");
+  try{ sessionStorage.setItem("boxing.noSplash","1"); }catch(e){}
+  setTimeout(()=>location.reload(),800);
+}
+setInterval(()=>{ if(reloadWanted && !reloading && document.visibilityState==="visible") safeReload(); },3000);
 // 回到 App 時，如果伺服器上的版本比較新就重新整理
 async function checkVersion(){
   try{
     const r=await fetch("index.html?v="+Date.now(),{cache:"no-store"}); const t=await r.text();
     const m=t.match(/APP_VERSION = "([^"]+)"/);
-    if(m && m[1]!==APP_VERSION && !$("#playerView").style.display.includes("block")){ toast("有新版本，更新中…"); setTimeout(()=>location.reload(),800); }
+    if(m && m[1]!==APP_VERSION) safeReload();
   }catch(e){}
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkVersion(); });

@@ -9,7 +9,7 @@
 
 若設定了 repo secret YOUTUBE_API_KEY，會額外用 YouTube 搜尋找最近 30 天的新影片。
 """
-import json, os, re, sys, time, urllib.request, urllib.parse
+import json, os, re, sys, time, unicodedata, urllib.request, urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
@@ -17,7 +17,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "videos-new.json")
 CH_CACHE = os.path.join(ROOT, "data", "channels.json")
 KEEP_DAYS = 120          # 清單只保留最近幾天上傳的影片
-MAX_ITEMS = 80
+MAX_ITEMS = 60
+MAX_PER_CHANNEL = 8      # 每個頻道最多保留幾部，避免每天上傳的頻道洗版
+MIN_SECONDS = 300        # 5 分鐘以下（多半是 Shorts、片段）不收
+MAX_LEN_FETCH = 60       # 每次最多去抓幾部影片的長度
 
 # 用這些影片找出要追蹤的頻道（每個頻道放一部即可）
 SEED_VIDEOS = [
@@ -41,7 +44,13 @@ SEED_VIDEOS = [
 
 BOX_KW = re.compile(r"box|ボクシング|ボクササイズ|拳擊|拳击|拳|shadow ?boxing|kickbox|fit ?boxing|フィットボクシング|복싱", re.I)
 GAME_KW = re.compile(r"fit(ness)? ?boxing|フィットボクシング|健身拳擊|피트니스 ?복싱|fitboxing", re.I)
-SKIP_KW = re.compile(r"#shorts|開箱|unbox|review|評測|trailer|預告|\bCM\b|outfit|服裝|信賴度|比賽|fight night|highlights?|\bvs\b", re.I)
+SKIP_KW = re.compile(r"#shorts|#memes?\b|開箱|unbox|review|評測|trailer|預告|\bCM\b|outfit|服裝|信賴度|比賽|fight night|highlights?|\bvs\b|ネタバレ|アチーブメント|配信|I Tried|challenge —|exit strategy|#boxingcombos?|#cotw|免費？", re.I)
+TUTORIAL_KW = re.compile(r"怎麼打|教學|技巧|錯誤|tutorial|how to|learn", re.I)
+
+# 健身拳擊教練（片假名 → 英文名）
+TRAINERS = {"ヒロ": "Hiro", "ベルナルド": "Bernardo", "リン": "Lin", "エヴァン": "Evan", "エバン": "Evan", "ローラ": "Laura",
+            "レオ": "Leo", "ジャニス": "Janice", "マルティナ": "Martina", "ステラ": "Stella", "アイシャ": "Aisha",
+            "ルーシー": "Lucy", "ナオ": "Nao", "セリア": "Celia", "ヴァネッサ": "Vanessa", "ルカ": "Luka"}
 HARD_KW = re.compile(r"hiit|tabata|高強度|ハード|intense|爆汗|advanced|進階|no mercy", re.I)
 LIGHT_KW = re.compile(r"beginner|初學|入門|輕|かるい|easy|low impact|stretch|伸展|ストレッチ", re.I)
 MIN_KW = re.compile(r"(\d{1,2})\s*(?:-|~)?\s*(?:min|分鐘|分|minute)", re.I)
@@ -69,11 +78,51 @@ def channel_of(video_id):
     return m.group(1) if m else None
 
 
+def nice_title(raw):
+    """把日文／半形的直播標題整理成好讀的中文標題。回傳 (標題, 類型或 None)"""
+    t = unicodedata.normalize("NFKC", raw).strip()
+    m = re.match(r"【フィットボクシング\s*(\d?)\s*(feat\.\s*初音ミク)?/([^】]*)】\s*(.*?)の(?:ミクササイズ|エクササイズ)", t)
+    if m:
+        num, miku, inner, when = m.groups()
+        game = "健身拳擊×初音未來" if miku else f"健身拳擊{num}"
+        parts = [x.strip() for x in inner.split("/") if x.strip()]
+        first = re.sub(r"\(CV\.[^)]*\)", "", parts[0]).strip() if parts else ""
+        d = re.search(r"(\d{4})年(\d{1,2})月(\d{1,2})日", when)
+        day = re.search(r"([\d,]+)日目", when)
+        when_txt = f"{int(d.group(2))}/{int(d.group(3))}" if d else (f"第 {day.group(1).replace(',', '')} 天" if day else "")
+        if first == "ストレッチ":
+            return f"{game} 伸展 {when_txt}".strip(), "stretch"
+        if miku:
+            return f"{game}〈{first}〉{when_txt}".strip(), None
+        who = TRAINERS.get(first, first)
+        return f"{game} 每日訓練 {when_txt}（{who} 教練）".strip(), None
+    m = re.match(r"「フィットボクシング\s*(\d?).*?」をプレイします!?\s*第(\d+)回", t)
+    if m:
+        return f"健身拳擊{m.group(1)} 每日遊玩 第 {m.group(2)} 回", None
+    t = re.sub(r"#\S+", "", t)                      # 拿掉 hashtag
+    t = re.sub(r"フィットボクシング|Fit ?Boxing", "健身拳擊", t, flags=re.I)
+    t = re.sub(r"\s+", " ", t).strip(" |｜-")
+    return t[:60], None
+
+
+def video_seconds(video_id):
+    """讀影片頁面裡的 lengthSeconds；讀不到回傳 None"""
+    html = get(f"https://www.youtube.com/watch?v={video_id}&hl=zh-TW")
+    m = re.search(r'"lengthSeconds":"(\d+)"', html) or re.search(r'itemprop="duration" content="PT(?:(\d+)H)?(\d+)M(\d+)S"', html)
+    if not m:
+        return None
+    if m.lastindex == 1:
+        return int(m.group(1))
+    h, mi, se = (int(x) if x else 0 for x in m.groups())
+    return h * 3600 + mi * 60 + se
+
+
 def classify(title, desc=""):
     text = f"{title} {desc}"
     src = "game" if GAME_KW.search(text) else "coach"
     intensity = "hard" if HARD_KW.search(title) else "light" if LIGHT_KW.search(title) else "normal"
-    vtype = "stretch" if re.search(r"stretch|伸展|ストレッチ", title, re.I) and not re.search(r"box|拳|ボクシング", title, re.I) else "daily"
+    vtype = "stretch" if re.search(r"stretch|伸展|ストレッチ", title, re.I) and not re.search(r"box|拳|ボクシング", title, re.I) else \
+        "tutorial" if TUTORIAL_KW.search(re.sub(r"#\S+", "", title)) else "daily"
     m = MIN_KW.search(title)
     minutes = int(m.group(1)) if m and 3 <= int(m.group(1)) <= 90 else None
     return src, intensity, vtype, minutes
@@ -144,18 +193,56 @@ def main():
     old = {v["id"]: v for v in load_json(OUT, {}).get("videos", [])}
     cutoff = (datetime.now(timezone.utc) - timedelta(days=KEEP_DAYS)).strftime("%Y-%m-%d")
     today = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
-    merged = dict(old)
-    for v in found:
-        if not v.get("id") or v["id"] in merged:
+    pool = {}
+    # 舊清單也重新整理一次（標題、分類、過濾規則改過時會套用）
+    for v in list(old.values()) + found:
+        vid = v.get("id")
+        if not vid or vid in pool:
             continue
-        if not BOX_KW.search(v["title"] + " " + v.get("desc", "")) or SKIP_KW.search(v["title"]):
+        orig = v.get("orig") or v["title"]
+        desc = v.get("desc", "")
+        if v not in found and vid in old:
+            desc = ""
+        if not BOX_KW.search(orig + " " + desc) and vid not in old:
             continue
-        src, intensity, vtype, minutes = classify(v["title"], v.get("desc", ""))
-        merged[v["id"]] = {"id": v["id"], "title": v["title"][:80], "type": vtype, "int": intensity, "min": minutes,
-                           "src": src, "channel": v.get("channel", ""), "published": v.get("published", ""), "added": today}
-    vids = [v for v in merged.values() if (v.get("published") or v.get("added", "")) >= cutoff]
+        if SKIP_KW.search(orig):
+            continue
+        src, intensity, vtype, minutes = classify(orig, desc)
+        title, t2 = nice_title(orig)
+        prev = old.get(vid, {})
+        pool[vid] = {"id": vid, "title": title, "orig": orig[:100], "type": t2 or vtype, "int": intensity,
+                     "min": prev.get("min") or minutes, "src": src, "channel": v.get("channel", ""),
+                     "published": v.get("published", ""), "added": prev.get("added", today)}
+        if "sec" in prev:
+            pool[vid]["sec"] = prev["sec"]
+
+    vids = [v for v in pool.values() if (v.get("published") or v.get("added", "")) >= cutoff]
     vids.sort(key=lambda v: v.get("published", ""), reverse=True)
-    vids = vids[:MAX_ITEMS]
+
+    # 抓影片長度：補上分鐘數，並排除 5 分鐘以下的短片
+    fetched = 0
+    for v in vids:
+        if "sec" in v or fetched >= MAX_LEN_FETCH:
+            continue
+        try:
+            sec = video_seconds(v["id"])
+            fetched += 1
+            if sec:
+                v["sec"] = sec
+                v["min"] = max(1, round(sec / 60))
+        except Exception as ex:
+            print(f"! 長度讀取失敗 {v['id']}：{ex}")
+        time.sleep(0.4)
+    vids = [v for v in vids if not v.get("sec") or v["sec"] >= MIN_SECONDS]
+
+    per = {}
+    keep = []
+    for v in vids:
+        ch = v.get("channel", "")
+        per[ch] = per.get(ch, 0) + 1
+        if per[ch] <= MAX_PER_CHANNEL:
+            keep.append(v)
+    vids = keep[:MAX_ITEMS]
     new_count = len([v for v in vids if v["id"] not in old])
     result = {"updated": datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"), "videos": vids}
     with open(OUT, "w", encoding="utf-8") as f:
