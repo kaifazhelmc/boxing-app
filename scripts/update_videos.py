@@ -172,7 +172,18 @@ def classify(title, desc=""):
 
 
 def from_rss(channel_id):
-    xml = get(f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}")
+    # 頻道 RSS 偶爾會對雲端主機回 404，改用「上傳的影片」播放清單 RSS 備援
+    urls = [f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}",
+            f"https://www.youtube.com/feeds/videos.xml?playlist_id=UU{channel_id[2:]}"]
+    xml, err = None, None
+    for u in urls:
+        try:
+            xml = get(u)
+            break
+        except Exception as ex:
+            err = ex
+    if xml is None:
+        raise err
     ns = {"a": "http://www.w3.org/2005/Atom", "yt": "http://www.youtube.com/xml/schemas/2015", "media": "http://search.yahoo.com/mrss/"}
     root = ET.fromstring(xml)
     author = root.findtext("a:title", default="", namespaces=ns)
