@@ -1,6 +1,54 @@
 {
- "updated": "2026-11-18 11:10",
+ "updated": "2026-11-19 10:50",
  "videos": [
+  {
+   "id": "AbrneOilH30",
+   "title": "健身拳擊×初音未來〈グリーンライツ・セレナーデ〉11/18",
+   "orig": "【フィットボクシング feat. 初音ミク/グリーンライツ・セレナーデ/♪Omoi feat. 初音ミク】2026年11月18日のミクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-18",
+   "added": "2026-11-19"
+  },
+  {
+   "id": "DT6VxTYCEPQ",
+   "title": "健身拳擊3 每日訓練 11/18（Hiro 教練）",
+   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月18日のエクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-18",
+   "added": "2026-11-19"
+  },
+  {
+   "id": "XdF8GSOa2NY",
+   "title": "健身拳擊×初音未來〈Let'sミクササイズ!!〉第 883 天",
+   "orig": "【フィットボクシング feat. 初音ミク/Let'sミクササイズ!!/♪cosMo＠暴走P feat. 初音ミク】883日目のミクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-18",
+   "added": "2026-11-19"
+  },
+  {
+   "id": "RmtC3M-nI24",
+   "title": "健身拳擊3 每日訓練 第 1172 天（Bernardo 教練）",
+   "orig": "【フィットボクシング3/ベルナルド(CV.大塚明夫)】1,172日目のエクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-18",
+   "added": "2026-11-19"
+  },
   {
    "id": "lkx0NNatWiQ",
    "title": "健身拳擊×初音未來 伸展 11/17",
@@ -48,54 +96,6 @@
    "channel": "カトウ@tnkknkk Ch.",
    "published": "2026-11-17",
    "added": "2026-11-18"
-  },
-  {
-   "id": "KWWZev4tRiE",
-   "title": "健身拳擊3 每日訓練 11/16（Hiro 教練）",
-   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月16日のエクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-16",
-   "added": "2026-11-17"
-  },
-  {
-   "id": "gajUJleexL8",
-   "title": "健身拳擊×初音未來〈カルチャ〉11/16",
-   "orig": "【フィットボクシング feat. 初音ミク/カルチャ/♪ツミキ feat. 初音ミク】2026年11月16日のミクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-16",
-   "added": "2026-11-17"
-  },
-  {
-   "id": "1ZTkv2Q_AUc",
-   "title": "健身拳擊×初音未來〈ラブソングに祝杯を!〉第 881 天",
-   "orig": "【フィットボクシング feat. 初音ミク/ラブソングに祝杯を！/♪TOKOTOKO(西沢さんP) feat. 鏡音リン】881日目のミクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-16",
-   "added": "2026-11-17"
-  },
-  {
-   "id": "hnkgHJDygQ0",
-   "title": "健身拳擊3 每日訓練 第 1170 天（Bernardo 教練）",
-   "orig": "【フィットボクシング3/ベルナルド(CV.大塚明夫)】1,170日目のエクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-16",
-   "added": "2026-11-17"
   },
   {
    "id": "Vhq2GkEsMGo",
@@ -563,18 +563,6 @@
    "src": "coach",
    "channel": "Boxing Ready",
    "published": "2026-08-21",
-   "added": "2026-11-12"
-  },
-  {
-   "id": "wObp8Q5dMGE",
-   "title": "【腹がねじ切れる】シャドウボクサーとBUウエストシェイプ集中コンビ【健身拳擊3 Nintendo Switch 2 Ed",
-   "orig": "【腹がねじ切れる】シャドウボクサーとBUウエストシェイプ集中コンビ【FitBoxing3 Nintendo Switch 2 Edition】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "ぜんきちFB",
-   "published": "2026-07-21",
    "added": "2026-11-12"
   }
  ]
