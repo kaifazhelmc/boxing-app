@@ -1,6 +1,78 @@
 {
- "updated": "2026-11-20 10:38",
+ "updated": "2026-11-21 10:51",
  "videos": [
+  {
+   "id": "TGAE4PUpS_4",
+   "title": "健身拳擊×初音未來〈GEDO〉11/20",
+   "orig": "【フィットボクシング feat. 初音ミク/GEDO/♪daraku feat. 鏡音レン】2026年11月20日のミクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-20",
+   "added": "2026-11-21"
+  },
+  {
+   "id": "iirhx6AFMQg",
+   "title": "健身拳擊3 每日訓練 11/20（Hiro 教練）",
+   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月20日のエクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-20",
+   "added": "2026-11-21"
+  },
+  {
+   "id": "yJrCxIVMYEY",
+   "title": "健身拳擊×初音未來〈ダーリンダンス〉第 885 天",
+   "orig": "【フィットボクシング feat. 初音ミク/ダーリンダンス/♪かいりきベア feat. 初音ミク】885日目のミクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-20",
+   "added": "2026-11-21"
+  },
+  {
+   "id": "nz-OXJSd76k",
+   "title": "健身拳擊3 每日訓練 第 1174 天（Bernardo 教練）",
+   "orig": "【フィットボクシング3/ベルナルド(CV.大塚明夫)】1,174日目のエクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-20",
+   "added": "2026-11-21"
+  },
+  {
+   "id": "aPxpDPISxWQ",
+   "title": "健身拳擊3 每日遊玩 第 234 回",
+   "orig": "「ﾌｨｯﾄﾎﾞｸｼﾝｸﾞ3 -Your ﾊﾟｰｿﾅﾙﾄﾚｰﾅｰ-」をﾌﾟﾚｲします！第234回 / \"피트니스 복싱 3 -Your 퍼스널 트레이너-\"를 플레이합니다! 제234회",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "HOHAHIHO AKITAR",
+   "published": "2026-11-20",
+   "added": "2026-11-21"
+  },
+  {
+   "id": "BTJKh9lju6c",
+   "title": "5 MIN BOXING WORKOUT WITH DUMBBELLS 🥊 | No Rest Cardio Boxin",
+   "orig": "5 MIN BOXING WORKOUT WITH DUMBBELLS 🥊 | No Rest Cardio Boxing",
+   "type": "daily",
+   "int": "normal",
+   "min": 5,
+   "src": "coach",
+   "channel": "KarlashFit",
+   "published": "2026-11-20",
+   "added": "2026-11-21"
+  },
   {
    "id": "7IHHLRaVt5M",
    "title": "健身拳擊3 每日訓練 11/19（Hiro 教練）",
@@ -48,54 +120,6 @@
    "channel": "カトウ@tnkknkk Ch.",
    "published": "2026-11-19",
    "added": "2026-11-20"
-  },
-  {
-   "id": "AbrneOilH30",
-   "title": "健身拳擊×初音未來〈グリーンライツ・セレナーデ〉11/18",
-   "orig": "【フィットボクシング feat. 初音ミク/グリーンライツ・セレナーデ/♪Omoi feat. 初音ミク】2026年11月18日のミクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-18",
-   "added": "2026-11-19"
-  },
-  {
-   "id": "DT6VxTYCEPQ",
-   "title": "健身拳擊3 每日訓練 11/18（Hiro 教練）",
-   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月18日のエクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-18",
-   "added": "2026-11-19"
-  },
-  {
-   "id": "XdF8GSOa2NY",
-   "title": "健身拳擊×初音未來〈Let'sミクササイズ!!〉第 883 天",
-   "orig": "【フィットボクシング feat. 初音ミク/Let'sミクササイズ!!/♪cosMo＠暴走P feat. 初音ミク】883日目のミクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-18",
-   "added": "2026-11-19"
-  },
-  {
-   "id": "RmtC3M-nI24",
-   "title": "健身拳擊3 每日訓練 第 1172 天（Bernardo 教練）",
-   "orig": "【フィットボクシング3/ベルナルド(CV.大塚明夫)】1,172日目のエクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-18",
-   "added": "2026-11-19"
   },
   {
    "id": "Vhq2GkEsMGo",
@@ -263,18 +287,6 @@
    "src": "coach",
    "channel": "NateBowerFitness",
    "published": "2026-10-27",
-   "added": "2026-11-12"
-  },
-  {
-   "id": "Tl2uKjSTXv0",
-   "title": "健身拳擊3 每日遊玩 第 226 回",
-   "orig": "「ﾌｨｯﾄﾎﾞｸｼﾝｸﾞ3 -Your ﾊﾟｰｿﾅﾙﾄﾚｰﾅｰ-」をﾌﾟﾚｲします！第226回 / \"피트니스 복싱 3 -Your 퍼스널 트레이너-\"를 플",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "HOHAHIHO AKITAR",
-   "published": "2026-10-23",
    "added": "2026-11-12"
   },
   {
