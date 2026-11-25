@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-24 13:33",
+ "updated": "2026-11-25 12:37",
  "videos": [
   {
    "id": "QX7gDiSs9sg",
@@ -12,6 +12,42 @@
    "channel": "カトウ@tnkknkk Ch.",
    "published": "2026-11-24",
    "added": "2026-11-24"
+  },
+  {
+   "id": "6tSlr18GSns",
+   "title": "健身拳擊3 每日訓練 11/24（Hiro 教練）",
+   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月24日のエクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-24",
+   "added": "2026-11-25"
+  },
+  {
+   "id": "Lu515M_xBc0",
+   "title": "健身拳擊×初音未來〈アンテナ39〉11/24",
+   "orig": "【フィットボクシング feat. 初音ミク/アンテナ39/♪柊マグネタイト feat. 初音ミク】2026年11月24日のミクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-24",
+   "added": "2026-11-25"
+  },
+  {
+   "id": "TlXvuWJYLm0",
+   "title": "健身拳擊×初音未來〈グリーンライツ・セレナーデ〉第 889 天",
+   "orig": "【フィットボクシング feat. 初音ミク/グリーンライツ・セレナーデ/♪Omoi feat. 初音ミク】889日目のミクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-24",
+   "added": "2026-11-25"
   },
   {
    "id": "_3CDSkw5b9k",
@@ -72,42 +108,6 @@
    "channel": "HOHAHIHO AKITAR",
    "published": "2026-11-23",
    "added": "2026-11-24"
-  },
-  {
-   "id": "2H04I6VfjY8",
-   "title": "健身拳擊×初音未來〈魔法少女とチョコレゐト〉11/22",
-   "orig": "【フィットボクシング feat. 初音ミク/魔法少女とチョコレゐト/♪ピノキオピー feat. 初音ミク】2026年11月22日のミクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-22",
-   "added": "2026-11-23"
-  },
-  {
-   "id": "I9SJM5s3lVY",
-   "title": "健身拳擊3 每日訓練 11/22（Hiro 教練）",
-   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月22日のエクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-22",
-   "added": "2026-11-23"
-  },
-  {
-   "id": "NgJVVmmDZ1o",
-   "title": "健身拳擊×初音未來〈ヘッジホッグ〉第 887 天",
-   "orig": "【フィットボクシング feat. 初音ミク/ヘッジホッグ/♪Noz. feat. 鏡音リン】887日目のミクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-22",
-   "added": "2026-11-23"
   },
   {
    "id": "95ti5eAXLrM",
