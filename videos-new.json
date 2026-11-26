@@ -1,6 +1,66 @@
 {
- "updated": "2026-11-25 12:37",
+ "updated": "2026-11-26 11:48",
  "videos": [
+  {
+   "id": "efxujlnyAIk",
+   "title": "拳擊實戰🔥為什麼總是被對手牽著走?掌握節奏的三個關鍵",
+   "orig": "拳擊實戰🔥為什麼總是被對手牽著走？掌握節奏的三個關鍵",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "coach",
+   "channel": "Hu Boxing 古月拳館",
+   "published": "2026-11-26",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "qxFjPmqW_sg",
+   "title": "健身拳擊3 每日訓練 11/25（Hiro 教練）",
+   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月25日のエクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-25",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "5-MgqoNEtNU",
+   "title": "健身拳擊×初音未來 伸展 11/25",
+   "orig": "【フィットボクシング feat. 初音ミク/ストレッチ】2026年11月25日のミクササイズ【 @tnkknkk_ch 】",
+   "type": "stretch",
+   "int": "light",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-25",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "Fh8x-xusjxs",
+   "title": "健身拳擊×初音未來〈GEDO〉第 890 天",
+   "orig": "【フィットボクシング feat. 初音ミク/GEDO/♪daraku feat. 鏡音レン】890日目のミクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-25",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "uzRYcaW-bWc",
+   "title": "健身拳擊3 每日訓練 第 1179 天（Bernardo 教練）",
+   "orig": "【フィットボクシング3/ベルナルド(CV.大塚明夫)】1,179日目のエクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-25",
+   "added": "2026-11-26"
+  },
   {
    "id": "QX7gDiSs9sg",
    "title": "健身拳擊3 每日訓練 第 1178 天（Bernardo 教練）",
@@ -48,54 +108,6 @@
    "channel": "カトウ@tnkknkk Ch.",
    "published": "2026-11-24",
    "added": "2026-11-25"
-  },
-  {
-   "id": "_3CDSkw5b9k",
-   "title": "健身拳擊×初音未來 伸展 11/23",
-   "orig": "【フィットボクシング feat. 初音ミク/ストレッチ】2026年11月23日のミクササイズ【 @tnkknkk_ch 】",
-   "type": "stretch",
-   "int": "light",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-23",
-   "added": "2026-11-24"
-  },
-  {
-   "id": "lsAaeeYu3Vs",
-   "title": "健身拳擊3 每日訓練 11/23（Hiro 教練）",
-   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月23日のエクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-23",
-   "added": "2026-11-24"
-  },
-  {
-   "id": "7mpt2Xmg68Q",
-   "title": "健身拳擊×初音未來〈カルチャ〉第 888 天",
-   "orig": "【フィットボクシング feat. 初音ミク/カルチャ/♪ツミキ feat. 初音ミク】888日目のミクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-23",
-   "added": "2026-11-24"
-  },
-  {
-   "id": "3HO0HbgpQBg",
-   "title": "健身拳擊3 每日訓練 第 1177 天（Bernardo 教練）",
-   "orig": "【フィットボクシング3/ベルナルド(CV.大塚明夫)】1,177日目のエクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-23",
-   "added": "2026-11-24"
   },
   {
    "id": "MMQnVqkDlxs",
@@ -527,18 +539,6 @@
    "src": "coach",
    "channel": "Hu Boxing 古月拳館",
    "published": "2026-09-23",
-   "added": "2026-11-12"
-  },
-  {
-   "id": "fNiYGlxkfJs",
-   "title": "10分鐘拳擊COMBO組合拳🥊",
-   "orig": "10分鐘拳擊COMBO組合拳🥊 #拳擊 #Boxing#拳擊教學 #拳擊訓練 #居家運動#燃脂 #減脂 #健身 #運動 #Fitness #Workout #m",
-   "type": "daily",
-   "int": "normal",
-   "min": 10,
-   "src": "coach",
-   "channel": "Hu Boxing 古月拳館",
-   "published": "2026-09-20",
    "added": "2026-11-12"
   },
   {
