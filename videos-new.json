@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26 11:48",
+ "updated": "2026-11-27 11:49",
  "videos": [
   {
    "id": "efxujlnyAIk",
@@ -12,6 +12,54 @@
    "channel": "Hu Boxing 古月拳館",
    "published": "2026-11-26",
    "added": "2026-11-26"
+  },
+  {
+   "id": "fVn5cVSyF24",
+   "title": "健身拳擊3 每日訓練 11/26（Hiro 教練）",
+   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月26日のエクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-26",
+   "added": "2026-11-27"
+  },
+  {
+   "id": "dtD9nWq6jMA",
+   "title": "健身拳擊×初音未來〈抜錨(ばつびょう)〉11/26",
+   "orig": "【フィットボクシング feat. 初音ミク/抜錨(ばつびょう)/♪ナナホシ管弦楽団 feat. 巡音ルカ】2026年11月26日のミクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-26",
+   "added": "2026-11-27"
+  },
+  {
+   "id": "dtGyepbns9A",
+   "title": "健身拳擊×初音未來〈魔法少女とチョコレゐト〉第 891 天",
+   "orig": "【フィットボクシング feat. 初音ミク/魔法少女とチョコレゐト/♪ピノキオピー feat. 初音ミク】891日目のミクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-26",
+   "added": "2026-11-27"
+  },
+  {
+   "id": "_OujF7Ow2hg",
+   "title": "健身拳擊3 每日訓練 第 1180 天（Bernardo 教練）",
+   "orig": "【フィットボクシング3/ベルナルド(CV.大塚明夫)】1,180日目のエクササイズ【 @tnkknkk_ch 】",
+   "type": "daily",
+   "int": "normal",
+   "min": null,
+   "src": "game",
+   "channel": "カトウ@tnkknkk Ch.",
+   "published": "2026-11-26",
+   "added": "2026-11-27"
   },
   {
    "id": "qxFjPmqW_sg",
@@ -60,54 +108,6 @@
    "channel": "カトウ@tnkknkk Ch.",
    "published": "2026-11-25",
    "added": "2026-11-26"
-  },
-  {
-   "id": "QX7gDiSs9sg",
-   "title": "健身拳擊3 每日訓練 第 1178 天（Bernardo 教練）",
-   "orig": "【フィットボクシング3/ベルナルド(CV.大塚明夫)】1,178日目のエクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-24",
-   "added": "2026-11-24"
-  },
-  {
-   "id": "6tSlr18GSns",
-   "title": "健身拳擊3 每日訓練 11/24（Hiro 教練）",
-   "orig": "【フィットボクシング3/ヒロ(CV.石田彰)】2026年11月24日のエクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-24",
-   "added": "2026-11-25"
-  },
-  {
-   "id": "Lu515M_xBc0",
-   "title": "健身拳擊×初音未來〈アンテナ39〉11/24",
-   "orig": "【フィットボクシング feat. 初音ミク/アンテナ39/♪柊マグネタイト feat. 初音ミク】2026年11月24日のミクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-24",
-   "added": "2026-11-25"
-  },
-  {
-   "id": "TlXvuWJYLm0",
-   "title": "健身拳擊×初音未來〈グリーンライツ・セレナーデ〉第 889 天",
-   "orig": "【フィットボクシング feat. 初音ミク/グリーンライツ・セレナーデ/♪Omoi feat. 初音ミク】889日目のミクササイズ【 @tnkknkk_ch 】",
-   "type": "daily",
-   "int": "normal",
-   "min": null,
-   "src": "game",
-   "channel": "カトウ@tnkknkk Ch.",
-   "published": "2026-11-24",
-   "added": "2026-11-25"
   },
   {
    "id": "MMQnVqkDlxs",
